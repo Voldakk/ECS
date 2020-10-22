@@ -1,4 +1,4 @@
-#include <example/math/math.hpp>
+#include <ecs/math/math.hpp>
 
 namespace Example
 {

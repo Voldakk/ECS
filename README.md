@@ -1,55 +1,11 @@
-[![Actions Status](https://github.com/VoldakkForks/modern-cpp-template/workflows/MacOS/badge.svg)](https://github.com/VoldakkForks/modern-cpp-template/actions)
-[![Actions Status](https://github.com/VoldakkForks/modern-cpp-template/workflows/Windows/badge.svg)](https://github.com/VoldakkForks/modern-cpp-template/actions)
-[![Actions Status](https://github.com/VoldakkForks/modern-cpp-template/workflows/Ubuntu/badge.svg)](https://github.com/VoldakkForks/modern-cpp-template/actions)
-[![codecov](https://codecov.io/gh/VoldakkForks/modern-cpp-template/branch/master/graph/badge.svg)](https://codecov.io/gh/VoldakkForks/modern-cpp-template)
+[![Actions Status](https://github.com/Voldakk/ECS/workflows/MacOS/badge.svg)](https://github.com/Voldakk/ECS/actions)
+[![Actions Status](https://github.com/Voldakk/ECS/workflows/Windows/badge.svg)](https://github.com/Voldakk/ECS/actions)
+[![Actions Status](https://github.com/Voldakk/ECS/workflows/Ubuntu/badge.svg)](https://github.com/Voldakk/ECS/actions)
+[![codecov](https://codecov.io/gh/Voldakk/ECS/branch/master/graph/badge.svg)](https://codecov.io/gh/Voldakk/ECS)
 
-# Modern C++ Template
+# ECS
 
-A quick C++ template for modern CMake projects, aimed to be an easy to use
-starting point.
-
-This is my personal take on such a type of template, thus I might not use the
-best practices or you might disagree with how I do things. Any and all feedback
-is greatly appreciated!
-
-## Features
-
-* Modern **CMake** configuration and project, which, to the best of my
-knowledge, uses the best practices,
-
-* An example of a **Clang-Format** config, inspired from the base *Google* model,
-with minor tweaks. This is aimed only as a starting point, as coding style
-is a subjective matter, everyone is free to either delete it (for the *LLVM*
-default) or supply their own alternative,
-
-* **Static analyzers** integration, with *Clang-Tidy* and *Cppcheck*, the former
-being the default option,
-
-* **Doxygen** support, through the `ENABLE_DOXYGEN` option, which you can enable
-if you wish to use it,
-
-* **Unit testing** support, through *GoogleTest* (with an option to enable
-*GoogleMock*) or *Catch2*,
-
-* **Code coverage**, enabled by using the `ENABLE_CODE_COVERAGE` option, through
-*Codecov* CI integration,
-
-* **Package manager support**, with *Conan* and *Vcpkg*, through their respective
-options
-
-* **CI workflows for Windows, Linux and MacOS** using *GitHub Actions*, making
-use of the caching features, to ensure minimum run time,
-
-* **.md templates** for: *README*, *Contributing Guideliness*,
-*Issues* and *Pull Requests*,
-
-* **Permissive license** to allow you to integrate it as easily as possible. The
-template is licensed under the [Unlicense](https://unlicense.org/),
-
-* Options to build as a header-only library or executable, not just a static or
-shared library.
-
-* **Ccache** integration, for speeding up rebuild times
+A C++ Entity Component System.
 
 ## Getting Started
 

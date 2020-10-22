@@ -1,4 +1,4 @@
-#include "exampleproject/example.hpp"
+#include "ecs/example.hpp"
 
 #pragma warning(push, 0)
 #include <gtest/gtest.h>
