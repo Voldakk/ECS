@@ -38,13 +38,13 @@ option(${PROJECT_NAME}_USE_CATCH2 "Use the Catch2 project for creating unit test
 # Currently supporting: Clang-Tidy, Cppcheck.
 
 option(${PROJECT_NAME}_ENABLE_CLANG_TIDY "Enable static analysis with Clang-Tidy." ON)
-option(${PROJECT_NAME}_ENABLE_CPPCHECK "Enable static analysis with Cppcheck." OFF)
+option(${PROJECT_NAME}_ENABLE_CPPCHECK "Enable static analysis with Cppcheck." ON)
 
 #
 # Code coverage
 #
 
-option(${PROJECT_NAME}_ENABLE_CODE_COVERAGE "Enable code coverage through GCC." OFF)
+option(${PROJECT_NAME}_ENABLE_CODE_COVERAGE "Enable code coverage through GCC." ON)
 
 #
 # Doxygen
@@ -86,4 +86,13 @@ find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif()
+
+
+# Compiler definitions
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+	add_compile_definitions(${PROJECT_NAME}_CONFIGURATION="debug")
+	add_compile_definitions(${PROJECT_NAME}_DEBUG)
+elseif (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+	add_compile_definitions(${PROJECT_NAME}_CONFIGURATION="release")
 endif()

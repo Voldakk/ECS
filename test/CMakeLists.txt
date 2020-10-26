@@ -15,8 +15,8 @@ verbose_message("Adding tests under ${CMAKE_PROJECT_NAME}Tests...")
 # Set the sources for the unit tests and add the executable(s)
 #
 
-set(test_sources 
-  src/math_test.cpp
+file(GLOB test_sources 
+  src/**
 )
 add_executable(${PROJECT_NAME} ${test_sources})
 

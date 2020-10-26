@@ -4,11 +4,13 @@ IndentWidth: 4
 UseTab: Never
 Language: Cpp
 Standard: Latest
-PointerAlignment: Left
 AccessModifierOffset: -2
 AlignAfterOpenBracket: false
 AlignConsecutiveAssignments: true
-AlignEscapedNewlinesLeft: true
+#AlignConsecutiveBitFields: true
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Right
 AlignOperands: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
@@ -24,15 +26,23 @@ BreakBeforeBinaryOperators: false
 BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 200
+ColumnLimit: 140
 CommentPragmas: ''
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 0
 Cpp11BracedListStyle: false
 DerivePointerBinding: false
+#DisableFormat:
+#ExperimentalAutoDetectBinPacking:
+#ForEachMacros:
+#IncludeCategories:
 IndentCaseLabels: true
 IndentFunctionDeclarationAfterType: false
+#IndentWrappedFunctionNames:
+#KeepEmptyLinesAtTheStartOfBlocks:
+#MacroBlockBegin:
+#MacroBlockEnd:
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 PenaltyBreakBeforeFirstCallParameter: 100
@@ -41,6 +51,9 @@ PenaltyBreakFirstLessLess: 0
 PenaltyBreakString: 100
 PenaltyExcessCharacter: 1
 PenaltyReturnTypeOnItsOwnLine: 20
+PointerAlignment: Left
+ReflowComments: true
+SortIncludes: true
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
