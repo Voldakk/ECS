@@ -22,3 +22,9 @@
 #else
 #define ECS_ASSERT(x)
 #endif // ECS_DEBUG
+
+
+namespace EVA::ECS
+{
+    typedef uint8_t byte;
+}

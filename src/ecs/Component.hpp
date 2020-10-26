@@ -53,7 +53,20 @@
 
 namespace EVA::ECS
 {
-    typedef size_t ComponentType;
+    struct ComponentType
+    {
+        typedef size_t ValueType;
+        ComponentType() = default;
+        ComponentType(ValueType value) : m_Value(value) {}
+        operator ValueType() const
+        {
+            return m_Value;
+        }
+
+      private:
+        ValueType m_Value = 0;
+    };
+
     struct Component;
 
     class ComponentMap
@@ -66,7 +79,7 @@ namespace EVA::ECS
             std::unique_ptr<Component> defaultData = nullptr;
         };
 
-        inline static ComponentType s_IdCounter = 0;
+        inline static ComponentType::ValueType s_IdCounter = 0;
         inline static std::vector<ComponentInfo> s_Info;
 
         template <typename T> static std::shared_ptr<Component> CreateT()
@@ -87,23 +100,23 @@ namespace EVA::ECS
 
     class ComponentList
     {
-      public:
-        std::set<ComponentType> types;
+        std::set<ComponentType> m_Types;
 
+      public:
         ComponentList() = default;
 
-        ComponentList(const std::vector<ComponentType>& _types)
+        ComponentList(const std::initializer_list<ComponentType>& _types)
         {
             for (auto& t : _types)
             {
-                types.insert(t);
+                m_Types.insert(t);
             }
         }
 
         ComponentList& Add(ComponentType type)
         {
-            ECS_ASSERT(std::find(types.begin(), types.end(), type) == types.end());
-            types.insert(type);
+            ECS_ASSERT(std::find(m_Types.begin(), m_Types.end(), type) == m_Types.end());
+            m_Types.insert(type);
             return *this;
         }
         template <typename T> ComponentList& Add()
@@ -114,8 +127,8 @@ namespace EVA::ECS
 
         ComponentList& Remove(ComponentType type)
         {
-            ECS_ASSERT(std::find(types.begin(), types.end(), type) != types.end());
-            types.erase(type);
+            ECS_ASSERT(std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end());
+            m_Types.erase(type);
             return *this;
         }
         template <typename T> ComponentList& Remove()
@@ -126,37 +139,84 @@ namespace EVA::ECS
 
         bool operator==(const ComponentList& other) const
         {
-            return types == other.types;
+            return m_Types == other.m_Types;
         }
 
         bool Contains(const ComponentList& other) const
         {
-            for (auto& i : other.types)
+            for (auto& i : other.m_Types)
             {
-                if (std::find(types.begin(), types.end(), i) == types.end())
+                if (std::find(m_Types.begin(), m_Types.end(), i) == m_Types.end())
                     return false;
             }
             return true;
         }
-    };
 
-    struct ComponentListHash
-    {
-      public:
-        std::size_t operator()(const ComponentList& l) const
+        bool Contains(const ComponentType& type) const
         {
-            size_t value = 0;
-            for (auto& i : l.types)
-            {
-                value = value * 3 + std::hash<ComponentType>()(i);
-            }
-            return value;
+            return std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end();
         }
+
+        size_t size() const
+        {
+            return m_Types.size();
+        }
+
+        std::set<ComponentType>::iterator begin()
+        {
+            return m_Types.begin();
+        }
+        std::set<ComponentType>::iterator end()
+        {
+            return m_Types.end();
+        }
+        std::set<ComponentType>::const_iterator begin() const
+        {
+            return m_Types.begin();
+        }
+        std::set<ComponentType>::const_iterator end() const
+        {
+            return m_Types.end();
+        }
+
+        struct Hash
+        {
+          public:
+            std::size_t operator()(const ComponentList& list) const
+            {
+                size_t value = 0;
+                for (auto& type : list)
+                {
+                    value = value * 3 + std::hash<ComponentType::ValueType>()(type);
+                }
+                return value;
+            }
+        };
     };
 
     struct Component
     {
         REGISTER_COMPONENT(Component);
         Component() = default;
+    };
+
+    struct Entity : public Component
+    {
+        REGISTER_COMPONENT(Entity);
+
+        size_t id    = 0;
+        size_t index = 0;
+
+        Entity() = default;
+        Entity(size_t id) : id(id) {}
+
+        bool operator==(const Entity& other) const
+        {
+            return id == other.id;
+        }
+        bool operator!=(const Entity& other) const
+        {
+            return !this->operator==(other);
+        }
     };
 } // namespace EVA::ECS
