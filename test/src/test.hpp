@@ -10,33 +10,33 @@ struct Position : public EVA::ECS::Component
 {
     REGISTER_COMPONENT(Position);
 
-    float x, y;
+    int x, y;
 
     Position() : x(0), y(0) {}
-    Position(float _x, float _y) : x(_x), y(_y) {}
+    Position(int _x, int _y) : x(_x), y(_y) {}
 };
 
 struct Velocity : public EVA::ECS::Component
 {
     REGISTER_COMPONENT(Velocity);
 
-    float x, y;
+    int x, y;
 
     Velocity() : x(0), y(0) {}
-    Velocity(float _x, float _y) : x(_x), y(_y) {}
+    Velocity(int _x, int _y) : x(_x), y(_y) {}
 };
 
 struct StructComponentA : public EVA::ECS::Component
 {
     REGISTER_COMPONENT(StructComponentA);
 
-    float x, y, z;
+    int x, y, z;
     short something;
     bool flag1;
     bool flag2;
 
     StructComponentA() : x(0), y(0), z(0), something(123), flag1(false), flag2(true) {}
-    StructComponentA(float x, float y, float z, short s, bool f1, bool f2) : x(x), y(y), z(z), something(s), flag1(f1), flag2(f2) {}
+    StructComponentA(int x, int y, int z, short s, bool f1, bool f2) : x(x), y(y), z(z), something(s), flag1(f1), flag2(f2) {}
 };
 
 struct Comp0 : public EVA::ECS::Component

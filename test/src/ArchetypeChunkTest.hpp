@@ -95,9 +95,7 @@ namespace EVA::ECS
         ArchetypeChunk ac(ai);
 
         for (size_t i = 0; i < 20; i++)
-        {
             ac.CreateEntity(i);
-        }
 
         auto pos14_0 = ac.GetComponent(Position::GetType(), 14);
         auto pos14_1 = ac.GetComponent(1, 14);
@@ -111,5 +109,31 @@ namespace EVA::ECS
         EXPECT_EQ(reinterpret_cast<Position*>(pos14_0)->x, 10);
         EXPECT_EQ(memcmp(pos14_0, pos14_1, sizeof(Position)), 0);
         EXPECT_EQ(memcmp(pos14_0, pos14_2, sizeof(Position)), 0);
+    }
+
+    TEST(ArchetypeChunk, Iterator) 
+    {
+        ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai(cl);
+        ArchetypeChunk ac(ai);
+
+        for (size_t i = 0; i < 20; i++)
+            ac.CreateEntity(i);
+
+        EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
+
+        int i = 0;
+        for (auto it = ac.begin<Position>(); it != ac.end<Position>(); ++it)
+            it->x = 2 * i++;
+
+        i = 0;
+        for (auto it = ac.begin<StructComponentA>(); it != ac.end<StructComponentA>(); ++it)
+            it->y = 3 * i++;
+
+        for (i = 0; i < 20; i++)
+            EXPECT_EQ(ac.GetComponent<Position>(i).x, 2 * i);
+
+        for (i = 0; i < 20; i++)
+            EXPECT_EQ(ac.GetComponent<StructComponentA>(i).y, 3 * i);
     }
 } // namespace EVA::ECS

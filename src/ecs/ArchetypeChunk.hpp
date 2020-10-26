@@ -53,7 +53,7 @@ namespace EVA::ECS
     class ArchetypeChunk
     {
       public:
-        class Iterator;
+        template <typename> class Iterator;
 
       private:
         const ArchetypeInfo& m_ArchetypeInfo;
@@ -82,6 +82,67 @@ namespace EVA::ECS
         {
             return m_Count;
         }
-    };
 
+        template <typename T> Iterator<T> begin()
+        {
+            Index i = GetComponentIndex(T::GetType());
+            return Iterator<T>(m_Data + m_ArchetypeInfo.componentInfo[i].start);
+        }
+        template <typename T> Iterator<T> end()
+        {
+            Index i = GetComponentIndex(T::GetType());
+            return Iterator<T>(m_Data + m_ArchetypeInfo.componentInfo[i].start + m_ArchetypeInfo.componentInfo[i].size * m_Count);
+        }
+
+        template <typename T> class Iterator
+        {
+          public:
+            using value_type        = T;
+            using pointer           = value_type*;
+            using reference         = value_type&;
+            using difference_type   = size_t;
+            using iterator_category = std::forward_iterator_tag;
+
+            Iterator(byte* ptr)
+            {
+                m_Ptr = reinterpret_cast<T*>(ptr);
+            }
+
+            bool operator==(const Iterator& other)
+            {
+                return m_Ptr == other.m_Ptr;
+            }
+
+            bool operator!=(const Iterator& other)
+            {
+                return !(*this == other);
+            }
+
+            Iterator& operator++()
+            {
+                m_Ptr++;
+                return *this;
+            }
+
+            Iterator operator++(int)
+            {
+                Iterator temp(*this);
+                operator++();
+                return temp;
+            }
+
+            pointer operator->()
+            {
+                return m_Ptr;
+            }
+
+            reference operator*()
+            {
+                return *m_Ptr;
+            }
+
+          private:
+            pointer m_Ptr;
+        };
+    };
 } // namespace EVA::ECS
