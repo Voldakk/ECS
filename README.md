@@ -3,7 +3,7 @@
 [![codecov](https://codecov.io/gh/Voldakk/ECS/branch/master/graph/badge.svg)](https://codecov.io/gh/Voldakk/ECS)
 <!---[![Actions Status](https://github.com/Voldakk/ECS/workflows/MacOS/badge.svg)](https://github.com/Voldakk/ECS/actions)-->
 
-# ECS
+# [WiP] ECS
 
 A C++ Entity Component System.
 
@@ -13,10 +13,6 @@ These instructions will get you a copy of the project up and running on your loc
 machine for development and testing purposes.
 
 ### Prerequisites
-
-This project is meant to be only a template, thus versions of the software used
-can be change to better suit the needs of the developer(s). If you wish to use the
-template *as-is*, meaning using the versions recommended here, then you will need:
 
 * **CMake v3.15+** - found at [https://cmake.org/](https://cmake.org/)
 

@@ -1,8 +1,10 @@
 #include "ArchetypeChunk.hpp"
 
+#include <cstring>
+
 namespace EVA::ECS
 {
-    ArchetypeInfo::ArchetypeInfo(const ComponentList& componentList)
+    ArchetypeInfo::ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize) : chunkSize(_chunkSize)
     {
         componentInfo.resize(componentList.size() + 1); // +1 for the required entity component
 
@@ -32,10 +34,10 @@ namespace EVA::ECS
     ArchetypeChunk::ArchetypeChunk(const ArchetypeInfo& archetypeInfo) : m_ArchetypeInfo(archetypeInfo)
     {
         m_Count = 0;
-        m_Data  = reinterpret_cast<byte*>(malloc(chunkSize));
+        m_Data  = reinterpret_cast<byte*>(malloc(m_ArchetypeInfo.chunkSize));
 
         ECS_ASSERT(m_Data != nullptr);
-        ECS_ASSERT(memset(m_Data, 0, chunkSize) != nullptr);
+        ECS_ASSERT(memset(m_Data, 0, m_ArchetypeInfo.chunkSize) != nullptr);
     }
 
     ArchetypeChunk::~ArchetypeChunk()
@@ -86,7 +88,7 @@ namespace EVA::ECS
     {
         auto it = std::find_if(m_ArchetypeInfo.componentInfo.begin(), m_ArchetypeInfo.componentInfo.end(), ComponentInfo::Predicate(type));
         ECS_ASSERT(it != m_ArchetypeInfo.componentInfo.end());
-        return std::distance(m_ArchetypeInfo.componentInfo.begin(), it);
+        return static_cast<Index>(std::distance(m_ArchetypeInfo.componentInfo.begin(), it));
     }
 
     byte* ArchetypeChunk::GetComponent(const Index archetypeComponentIndex, const Index index)

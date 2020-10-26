@@ -7,7 +7,7 @@
 
 namespace EVA::ECS
 {
-    constexpr size_t chunkSize = 16384;
+    constexpr size_t defaultChunkSize = 16384;
     typedef size_t Index;
 
     /* Data layout examples
@@ -43,11 +43,12 @@ namespace EVA::ECS
     };
     struct ArchetypeInfo
     {
+        size_t chunkSize        = 0;
         size_t entitySize       = 0;
         size_t entitiesPerChunk = 0;
         std::vector<ComponentInfo> componentInfo;
 
-        ArchetypeInfo(const ComponentList& componentList);
+        ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize = defaultChunkSize);
     };
 
     class ArchetypeChunk
@@ -100,7 +101,7 @@ namespace EVA::ECS
             using value_type        = T;
             using pointer           = value_type*;
             using reference         = value_type&;
-            using difference_type   = size_t;
+            using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
             Iterator(byte* ptr)

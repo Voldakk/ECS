@@ -10,7 +10,7 @@ namespace EVA::ECS
         ArchetypeInfo ai(cl);
 
         EXPECT_EQ(ai.entitySize, sizeof(Entity) + sizeof(Position) + sizeof(StructComponentA));
-        EXPECT_EQ(ai.entitiesPerChunk, chunkSize / ai.entitySize);
+        EXPECT_EQ(ai.entitiesPerChunk, ai.chunkSize / ai.entitySize);
         EXPECT_EQ(ai.componentInfo.size(), 3);
     }
 
@@ -111,7 +111,7 @@ namespace EVA::ECS
         EXPECT_EQ(memcmp(pos14_0, pos14_2, sizeof(Position)), 0);
     }
 
-    TEST(ArchetypeChunk, Iterator) 
+    TEST(ArchetypeChunk, Iterator)
     {
         ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
         ArchetypeInfo ai(cl);
@@ -122,14 +122,15 @@ namespace EVA::ECS
 
         EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
 
-        int i = 0;
+        int v = 0;
         for (auto it = ac.begin<Position>(); it != ac.end<Position>(); ++it)
-            it->x = 2 * i++;
+            it->x = 2 * v++;
 
-        i = 0;
+        v = 0;
         for (auto it = ac.begin<StructComponentA>(); it != ac.end<StructComponentA>(); ++it)
-            it->y = 3 * i++;
+            it->y = 3 * v++;
 
+        Index i;
         for (i = 0; i < 20; i++)
             EXPECT_EQ(ac.GetComponent<Position>(i).x, 2 * i);
 
