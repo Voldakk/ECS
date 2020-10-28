@@ -32,37 +32,57 @@ namespace EVA::ECS
         EXPECT_EQ(ai.componentInfo[2].size, sizeof(StructComponentA));
     }
 
-    TEST(ArchetypeChunk, GetComponentIndex)
+    TEST(ArchetypeInfo, GetComponentIndex)
     {
         ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
         ArchetypeInfo ai(cl);
-        ArchetypeChunk ac(ai);
 
-        EXPECT_EQ(ac.GetComponentIndex(Entity::GetType()), 0);
-        EXPECT_EQ(ac.GetComponentIndex(Position::GetType()), 1);
-        EXPECT_EQ(ac.GetComponentIndex(StructComponentA::GetType()), 2);
+        EXPECT_EQ(ai.GetComponentIndex(Entity::GetType()), 0);
+        EXPECT_EQ(ai.GetComponentIndex(Position::GetType()), 1);
+        EXPECT_EQ(ai.GetComponentIndex(StructComponentA::GetType()), 2);
     }
 
     TEST(ArchetypeChunk, CreateEntity)
     {
         ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
-        ArchetypeInfo ai(cl);
+        size_t chunkSize = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(StructComponentA));
+        ArchetypeInfo ai(cl, chunkSize);
         ArchetypeChunk ac(ai);
 
-        Entity e0(11);
-        Entity e1(22);
+        Entity e1(11);
+        Entity e2(22);
+        Entity e3(33);
+        Entity e4(44);
 
         EXPECT_EQ(ac.Count(), 0);
-        ac.CreateEntity(e0);
-        EXPECT_EQ(ac.Count(), 1);
+        EXPECT_TRUE(ac.Empty());
+        EXPECT_FALSE(ac.Full());
+
         ac.CreateEntity(e1);
+
+        EXPECT_EQ(ac.Count(), 1);
+        EXPECT_FALSE(ac.Empty());
+        EXPECT_FALSE(ac.Full());
+
+        ac.CreateEntity(e2);
+
         EXPECT_EQ(ac.Count(), 2);
 
-        Entity& get0 = ac.GetEntity(0);
-        Entity& get1 = ac.GetEntity(1);
+        ac.CreateEntity(e3);
 
-        EXPECT_EQ(get0.id, e0.id);
+        EXPECT_EQ(ac.Count(), 3);
+
+        ac.CreateEntity(e4);
+
+        EXPECT_EQ(ac.Count(), 4);
+        EXPECT_FALSE(ac.Empty());
+        EXPECT_TRUE(ac.Full());
+
+        Entity& get1 = ac.GetEntity(0);
+        Entity& get3 = ac.GetEntity(2);
+
         EXPECT_EQ(get1.id, e1.id);
+        EXPECT_EQ(get3.id, e3.id);
     }
 
     TEST(ArchetypeChunk, CopyEntity)

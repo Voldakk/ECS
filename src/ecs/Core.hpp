@@ -23,10 +23,6 @@
 #define ECS_ASSERT(x)
 #endif // ECS_DEBUG
 
-#ifdef ECS_NO_MEMCPY_S
-#define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
-#endif // ECS_NO_MEMCPY_S
-
 namespace EVA::ECS
 {
     typedef unsigned char byte;

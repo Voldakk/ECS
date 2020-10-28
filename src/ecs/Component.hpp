@@ -3,10 +3,10 @@
 #include "Core.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <map>
 #include <memory>
 #include <set>
-#include <string.h>
 #include <vector>
 
 #define BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                     \
@@ -40,14 +40,8 @@
     }                                                                                                                                      \
     END_STATIC_CONSTRUCTOR(NAME)                                                                                                           \
   public:                                                                                                                                  \
-    static EVA::ECS::ComponentType GetType()                                                                                               \
-    {                                                                                                                                      \
-        return s_Type;                                                                                                                     \
-    }                                                                                                                                      \
-    static size_t GetSize()                                                                                                                \
-    {                                                                                                                                      \
-        return s_Size;                                                                                                                     \
-    }
+    static EVA::ECS::ComponentType GetType() { return s_Type; }                                                                            \
+    static size_t GetSize() { return s_Size; }
 // #define REGISTER_COMPONENT(NAME)
 
 
@@ -58,10 +52,7 @@ namespace EVA::ECS
         typedef size_t ValueType;
         ComponentType() = default;
         ComponentType(ValueType value) : m_Value(value) {}
-        operator ValueType() const
-        {
-            return m_Value;
-        }
+        operator ValueType() const { return m_Value; }
 
       private:
         ValueType m_Value = 0;
@@ -82,20 +73,14 @@ namespace EVA::ECS
         inline static ComponentType::ValueType s_IdCounter = 0;
         inline static std::vector<ComponentInfo> s_Info;
 
-        template <typename T> static std::shared_ptr<Component> CreateT()
-        {
-            return std::make_shared<T>();
-        }
+        template <typename T> static std::shared_ptr<Component> CreateT() { return std::make_shared<T>(); }
 
         inline static void CreateComponent(ComponentType type, void* data)
         {
-            memcpy(data, s_Info[type].defaultData.get(), s_Info[type].size);
+            std::memmove(data, s_Info[type].defaultData.get(), s_Info[type].size);
         }
 
-        inline static Component* DefaultData(ComponentType type)
-        {
-            return s_Info[type].defaultData.get();
-        }
+        inline static Component* DefaultData(ComponentType type) { return s_Info[type].defaultData.get(); }
     };
 
     class ComponentList
@@ -137,10 +122,7 @@ namespace EVA::ECS
             return Remove(T::GetType());
         }
 
-        bool operator==(const ComponentList& other) const
-        {
-            return m_Types == other.m_Types;
-        }
+        bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
 
         bool Contains(const ComponentList& other) const
         {
@@ -152,32 +134,14 @@ namespace EVA::ECS
             return true;
         }
 
-        bool Contains(const ComponentType& type) const
-        {
-            return std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end();
-        }
+        bool Contains(const ComponentType& type) const { return std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end(); }
 
-        size_t size() const
-        {
-            return m_Types.size();
-        }
+        size_t size() const { return m_Types.size(); }
 
-        std::set<ComponentType>::iterator begin()
-        {
-            return m_Types.begin();
-        }
-        std::set<ComponentType>::iterator end()
-        {
-            return m_Types.end();
-        }
-        std::set<ComponentType>::const_iterator begin() const
-        {
-            return m_Types.begin();
-        }
-        std::set<ComponentType>::const_iterator end() const
-        {
-            return m_Types.end();
-        }
+        std::set<ComponentType>::iterator begin() { return m_Types.begin(); }
+        std::set<ComponentType>::iterator end() { return m_Types.end(); }
+        std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
+        std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }
 
         struct Hash
         {
@@ -208,15 +172,9 @@ namespace EVA::ECS
         size_t index = 0;
 
         Entity() = default;
-        Entity(size_t id) : id(id) {}
+        Entity(size_t _id) : id(_id) {}
 
-        bool operator==(const Entity& other) const
-        {
-            return id == other.id;
-        }
-        bool operator!=(const Entity& other) const
-        {
-            return !this->operator==(other);
-        }
+        bool operator==(const Entity& other) const { return id == other.id; }
+        bool operator!=(const Entity& other) const { return !(*this == other); }
     };
 } // namespace EVA::ECS

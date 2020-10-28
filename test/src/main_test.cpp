@@ -1,4 +1,5 @@
 #include "ArchetypeChunkTest.hpp"
+#include "ArchetypeTest.hpp"
 #include "ComponentTest.hpp"
 
 /*

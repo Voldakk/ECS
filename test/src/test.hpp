@@ -36,7 +36,7 @@ struct StructComponentA : public EVA::ECS::Component
     bool flag2;
 
     StructComponentA() : x(0), y(0), z(0), something(123), flag1(false), flag2(true) {}
-    StructComponentA(int x, int y, int z, short s, bool f1, bool f2) : x(x), y(y), z(z), something(s), flag1(f1), flag2(f2) {}
+    StructComponentA(int _x, int _y, int _z, short _s, bool _f1, bool _f2) : x(_x), y(_y), z(_z), something(_s), flag1(_f1), flag2(_f2) {}
 };
 
 struct Comp0 : public EVA::ECS::Component

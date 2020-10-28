@@ -4,6 +4,8 @@
 
 namespace EVA::ECS
 {
+    // ArchetypeInfo
+
     ArchetypeInfo::ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize) : chunkSize(_chunkSize)
     {
         componentInfo.resize(componentList.size() + 1); // +1 for the required entity component
@@ -31,6 +33,15 @@ namespace EVA::ECS
         }
     }
 
+    Index ArchetypeInfo::GetComponentIndex(const ComponentType type) const
+    {
+        auto it = std::find_if(componentInfo.begin(), componentInfo.end(), ComponentInfo::Predicate(type));
+        ECS_ASSERT(it != componentInfo.end());
+        return static_cast<Index>(std::distance(componentInfo.begin(), it));
+    }
+
+    // ArchetypeChunk
+
     ArchetypeChunk::ArchetypeChunk(const ArchetypeInfo& archetypeInfo) : m_ArchetypeInfo(archetypeInfo)
     {
         m_Count = 0;
@@ -40,23 +51,20 @@ namespace EVA::ECS
         ECS_ASSERT(memset(m_Data, 0, m_ArchetypeInfo.chunkSize) != nullptr);
     }
 
-    ArchetypeChunk::~ArchetypeChunk()
-    {
-        free(m_Data);
-    }
+    ArchetypeChunk::~ArchetypeChunk() { free(m_Data); }
 
     Index ArchetypeChunk::CreateEntity(const Entity& entity)
     {
         ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
 
         // Copy the entity component
-        memcpy_s(m_Data + m_Count * sizeof(Entity), sizeof(Entity), &entity, sizeof(Entity));
+        std::memmove(m_Data + m_Count * sizeof(Entity), &entity, sizeof(Entity));
 
         // Starting at 1 to skip Entity
         for (size_t i = 1; i < m_ArchetypeInfo.componentInfo.size(); i++)
         {
             auto c = m_ArchetypeInfo.componentInfo[i];
-            memcpy_s(m_Data + c.start + m_Count * c.size, c.size, ComponentMap::DefaultData(c.type), c.size);
+            std::memmove(m_Data + c.start + m_Count * c.size, ComponentMap::DefaultData(c.type), c.size);
         }
 
         m_Count++;
@@ -68,7 +76,7 @@ namespace EVA::ECS
         ECS_ASSERT(intoIndex < m_ArchetypeInfo.entitiesPerChunk);
         for (auto& c : m_ArchetypeInfo.componentInfo)
         {
-            memcpy_s(m_Data + c.start + intoIndex * c.size, c.size, fromChunk.m_Data + c.start + fromIndex * c.size, c.size);
+            std::memmove(m_Data + c.start + intoIndex * c.size, fromChunk.m_Data + c.start + fromIndex * c.size, c.size);
         }
     }
 
@@ -84,13 +92,6 @@ namespace EVA::ECS
         m_Count--;
     }
 
-    Index ArchetypeChunk::GetComponentIndex(const ComponentType type) const
-    {
-        auto it = std::find_if(m_ArchetypeInfo.componentInfo.begin(), m_ArchetypeInfo.componentInfo.end(), ComponentInfo::Predicate(type));
-        ECS_ASSERT(it != m_ArchetypeInfo.componentInfo.end());
-        return static_cast<Index>(std::distance(m_ArchetypeInfo.componentInfo.begin(), it));
-    }
-
     byte* ArchetypeChunk::GetComponent(const Index archetypeComponentIndex, const Index index)
     {
         ECS_ASSERT(index < m_Count);
@@ -101,7 +102,7 @@ namespace EVA::ECS
     byte* ArchetypeChunk::GetComponent(const ComponentType type, const Index index)
     {
         ECS_ASSERT(index < m_Count);
-        Index i = GetComponentIndex(type);
+        Index i = m_ArchetypeInfo.GetComponentIndex(type);
         return m_Data + m_ArchetypeInfo.componentInfo[i].start + index * m_ArchetypeInfo.componentInfo[i].size;
     }
 
