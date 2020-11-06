@@ -20,7 +20,9 @@ namespace EVA::ECS
         {
             ++m_CurrentChunk;
             if (m_CurrentChunk == m_Chunks.end())
+            {
                 AddChunk();
+            }
         }
         m_EntityCount++;
 
@@ -38,7 +40,9 @@ namespace EVA::ECS
         (*m_CurrentChunk)->RemoveLast();
 
         if ((*m_CurrentChunk)->Empty() && m_CurrentChunk != m_Chunks.begin())
+        {
             --m_CurrentChunk;
+        }
 
         m_EntityCount--;
         return entity;
@@ -51,19 +55,19 @@ namespace EVA::ECS
         return m_Chunks[chunk]->GetEntity(indexInChunk);
     }
 
-    byte* Archetype::GetComponent(const Index archetypeComponentIndex, const Index chunk, const Index indexInChunk)
+    Byte* Archetype::GetComponent(const Index archetypeComponentIndex, const Index chunk, const Index indexInChunk)
     {
         ECS_ASSERT(chunk <= ActiveChunkIndex());
         return m_Chunks[chunk]->GetComponent(archetypeComponentIndex, indexInChunk);
     }
 
-    byte* Archetype::GetComponent(const ComponentType type, const Index chunk, const Index indexInChunk)
+    Byte* Archetype::GetComponent(const ComponentType type, const Index chunk, const Index indexInChunk)
     {
         ECS_ASSERT(chunk <= ActiveChunkIndex());
         return m_Chunks[chunk]->GetComponent(type, indexInChunk);
     }
 
-    byte* Archetype::GetComponent(const Index archetypeComponentIndex, const Index index)
+    Byte* Archetype::GetComponent(const Index archetypeComponentIndex, const Index index)
     {
         Index chunkIndex   = index / m_ArchetypeInfo.entitiesPerChunk;
         Index indexInChunk = index % m_ArchetypeInfo.entitiesPerChunk;
@@ -71,7 +75,7 @@ namespace EVA::ECS
         return m_Chunks[chunkIndex]->GetComponent(archetypeComponentIndex, indexInChunk);
     }
 
-    byte* Archetype::GetComponent(const ComponentType type, const Index index)
+    Byte* Archetype::GetComponent(const ComponentType type, const Index index)
     {
         Index chunkIndex   = index / m_ArchetypeInfo.entitiesPerChunk;
         Index indexInChunk = index % m_ArchetypeInfo.entitiesPerChunk;

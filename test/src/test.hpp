@@ -63,31 +63,3 @@ struct Comp5 : public EVA::ECS::Component
 {
     REGISTER_COMPONENT(Comp5);
 };
-struct Comp6 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp6);
-};
-struct Comp7 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp7);
-};
-struct Comp8 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp8);
-};
-struct Comp9 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp9);
-};
-struct Comp10 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp10);
-};
-struct Comp11 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp11);
-};
-struct Comp12 : public EVA::ECS::Component
-{
-    REGISTER_COMPONENT(Comp12);
-};

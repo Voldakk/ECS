@@ -26,9 +26,9 @@ namespace EVA::ECS
 
     TEST(ComponentMap, SizeEntries)
     {
-        EXPECT_EQ(ComponentMap::s_Info[Comp0::GetType()].size, Comp0::GetSize());
-        EXPECT_EQ(ComponentMap::s_Info[Position::GetType()].size, Position::GetSize());
-        EXPECT_EQ(ComponentMap::s_Info[StructComponentA::GetType()].size, StructComponentA::GetSize());
+        EXPECT_EQ(ComponentMap::s_Info[Comp0::GetType().Get()].size, Comp0::GetSize());
+        EXPECT_EQ(ComponentMap::s_Info[Position::GetType().Get()].size, Position::GetSize());
+        EXPECT_EQ(ComponentMap::s_Info[StructComponentA::GetType().Get()].size, StructComponentA::GetSize());
     }
 
     TEST(ComponentMap, DefaultData)

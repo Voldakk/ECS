@@ -30,13 +30,13 @@
     inline static size_t s_Size;                                                                                                           \
     BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                         \
     {                                                                                                                                      \
-        NAME::s_Type = EVA::ECS::ComponentMap::s_IdCounter++;                                                                              \
+        NAME::s_Type = EVA::ECS::ComponentType(EVA::ECS::ComponentMap::s_IdCounter++);                                                     \
         NAME::s_Size = sizeof(NAME);                                                                                                       \
-        if (NAME::s_Type >= EVA::ECS::ComponentMap::s_Info.size())                                                                         \
-            EVA::ECS::ComponentMap::s_Info.resize(NAME::s_Type + 1);                                                                       \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type].size        = NAME::s_Size;                                                           \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type].func        = &EVA::ECS::ComponentMap::CreateT<NAME>;                                 \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type].defaultData = std::make_unique<NAME>();                                               \
+        if (NAME::s_Type.Get() >= EVA::ECS::ComponentMap::s_Info.size())                                                                   \
+            EVA::ECS::ComponentMap::s_Info.resize(NAME::s_Type.Get() + 1);                                                                 \
+        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].size        = NAME::s_Size;                                                     \
+        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].func        = &EVA::ECS::ComponentMap::CreateT<NAME>;                           \
+        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData = std::make_unique<NAME>();                                         \
     }                                                                                                                                      \
     END_STATIC_CONSTRUCTOR(NAME)                                                                                                           \
   public:                                                                                                                                  \
@@ -49,14 +49,21 @@ namespace EVA::ECS
 {
     struct ComponentType
     {
-        typedef size_t ValueType;
+        using ValueType = size_t;
         ComponentType() = default;
-        ComponentType(ValueType value) : m_Value(value) {}
-        operator ValueType() const { return m_Value; }
+        explicit ComponentType(ValueType value) : m_Value(value) {}
+        inline ValueType Get() const { return m_Value; }
+        explicit operator ValueType() const { return m_Value; }
 
       private:
-        ValueType m_Value = 0;
+        ValueType m_Value{ 0 };
     };
+    inline bool operator==(const ComponentType& lhs, const ComponentType& rhs) { return lhs.Get() == rhs.Get(); }
+    inline bool operator!=(const ComponentType& lhs, const ComponentType& rhs) { return !operator==(lhs, rhs); }
+    inline bool operator<(const ComponentType& lhs, const ComponentType& rhs) { return lhs.Get() < rhs.Get(); }
+    inline bool operator>(const ComponentType& lhs, const ComponentType& rhs) { return operator<(rhs, lhs); }
+    inline bool operator<=(const ComponentType& lhs, const ComponentType& rhs) { return !operator>(lhs, rhs); }
+    inline bool operator>=(const ComponentType& lhs, const ComponentType& rhs) { return !operator<(lhs, rhs); }
 
     struct Component;
 
@@ -65,22 +72,22 @@ namespace EVA::ECS
       public:
         struct ComponentInfo
         {
-            size_t size                            = 0;
+            size_t size{ 0 };
             std::shared_ptr<Component> (*func)()   = nullptr;
             std::unique_ptr<Component> defaultData = nullptr;
         };
 
-        inline static ComponentType::ValueType s_IdCounter = 0;
+        inline static ComponentType::ValueType s_IdCounter{ 0 };
         inline static std::vector<ComponentInfo> s_Info;
 
         template <typename T> static std::shared_ptr<Component> CreateT() { return std::make_shared<T>(); }
 
         inline static void CreateComponent(ComponentType type, void* data)
         {
-            std::memmove(data, s_Info[type].defaultData.get(), s_Info[type].size);
+            std::memmove(data, s_Info[type.Get()].defaultData.get(), s_Info[type.Get()].size);
         }
 
-        inline static Component* DefaultData(ComponentType type) { return s_Info[type].defaultData.get(); }
+        inline static Component* DefaultData(ComponentType type) { return s_Info[type.Get()].defaultData.get(); }
     };
 
     class ComponentList
@@ -89,14 +96,7 @@ namespace EVA::ECS
 
       public:
         ComponentList() = default;
-
-        ComponentList(const std::initializer_list<ComponentType>& _types)
-        {
-            for (auto& t : _types)
-            {
-                m_Types.insert(t);
-            }
-        }
+        ComponentList(const std::initializer_list<ComponentType>& types) : m_Types(types) {}
 
         ComponentList& Add(ComponentType type)
         {
@@ -126,10 +126,12 @@ namespace EVA::ECS
 
         bool Contains(const ComponentList& other) const
         {
-            for (auto& i : other.m_Types)
+            for (const auto & i : other.m_Types)
             {
                 if (std::find(m_Types.begin(), m_Types.end(), i) == m_Types.end())
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -149,9 +151,9 @@ namespace EVA::ECS
             std::size_t operator()(const ComponentList& list) const
             {
                 size_t value = 0;
-                for (auto& type : list)
+                for (const auto & type : list)
                 {
-                    value = value * 3 + std::hash<ComponentType::ValueType>()(type);
+                    value = value * 3 + std::hash<ComponentType::ValueType>()(type.Get());
                 }
                 return value;
             }
@@ -172,7 +174,7 @@ namespace EVA::ECS
         size_t index = 0;
 
         Entity() = default;
-        Entity(size_t _id) : id(_id) {}
+        explicit Entity(size_t _id) : id(_id) {}
 
         bool operator==(const Entity& other) const { return id == other.id; }
         bool operator!=(const Entity& other) const { return !(*this == other); }

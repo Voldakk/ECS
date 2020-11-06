@@ -14,25 +14,25 @@ namespace EVA::ECS
         typedef std::vector<std::unique_ptr<ArchetypeChunk>> ChunkVector;
         template <typename> class Iterator;
 
-        Archetype(const ComponentList& components, size_t chunkSize = defaultChunkSize);
+        explicit Archetype(const ComponentList& components, size_t chunkSize = DefaultChunkSize);
 
         std::pair<Index, Index> CreateEntity(const Entity& entity);
-        Entity DestroyEntity(const Index chunk, const Index indexInChunk);
-        Entity& GetEntity(const Index chunk, const Index indexInChunk);
+        Entity DestroyEntity(Index chunk, Index indexInChunk);
+        Entity& GetEntity(Index chunk, Index indexInChunk);
 
-        size_t EntityCount() { return m_EntityCount; }
+        size_t EntityCount() const { return m_EntityCount; }
         size_t ChunkCount() { return m_Chunks.size(); }
         Index ActiveChunkIndex() { return static_cast<Index>(std::distance(m_Chunks.begin(), m_CurrentChunk)); }
 
-        byte* GetComponent(const ComponentType type, const Index chunk, const Index indexInChunk);
-        byte* GetComponent(const Index archetypeComponentIndex, const Index chunk, const Index indexInChunk);
+        Byte* GetComponent(ComponentType type, Index chunk, Index indexInChunk);
+        Byte* GetComponent(Index archetypeComponentIndex, Index chunk, Index indexInChunk);
         template <typename T> inline T& GetComponent(const Index chunk, const Index indexInChunk)
         {
             return *reinterpret_cast<T*>(GetComponent(T::GetType(), chunk, indexInChunk));
         }
 
-        byte* GetComponent(const ComponentType type, const Index index);
-        byte* GetComponent(const Index archetypeComponentIndex, const Index index);
+        Byte* GetComponent(ComponentType type, Index index);
+        Byte* GetComponent(Index archetypeComponentIndex, Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
 
         template <typename T> Iterator<T> begin() { return Iterator<T>(m_Chunks.begin(), m_Chunks.end()); }
@@ -59,10 +59,8 @@ namespace EVA::ECS
             using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd)
+            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd) : m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd)
             {
-                m_ChunksIt  = chunkIt;
-                m_ChunksEnd = chunksEnd;
                 if (m_ChunksIt != m_ChunksEnd)
                 {
                     m_CompIt   = (*m_ChunksIt)->begin<T>();
@@ -94,7 +92,7 @@ namespace EVA::ECS
                 return *this;
             }
 
-            Iterator operator++(int)
+            const Iterator operator++(int)
             {
                 Iterator temp(*this);
                 operator++();

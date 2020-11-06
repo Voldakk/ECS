@@ -69,12 +69,12 @@ namespace EVA::ECS
         Archetype a(cl, chunkSize);
 
         for (size_t i = 0; i < 20; i++)
-            a.CreateEntity(i);
+            a.CreateEntity(Entity(i));
 
         // Chunk index & index in chunk
         auto pos1_3_0 = a.GetComponent(Position::GetType(), 1, 3);
         auto pos1_3_1 = a.GetComponent(1, 1, 3);
-        auto pos1_3_2 = reinterpret_cast<byte*>(&a.GetComponent<Position>(1, 3));
+        auto pos1_3_2 = reinterpret_cast<Byte*>(&a.GetComponent<Position>(1, 3));
 
         EXPECT_EQ(pos1_3_0, pos1_3_1);
         EXPECT_EQ(pos1_3_0, pos1_3_2);
@@ -93,12 +93,12 @@ namespace EVA::ECS
         Archetype a(cl, chunkSize);
 
         for (size_t i = 0; i < 20; i++)
-            a.CreateEntity(i);
+            a.CreateEntity(Entity(i));
 
         // Index in archetype
         auto pos14_0 = a.GetComponent(Position::GetType(), 14);
         auto pos14_1 = a.GetComponent(1, 14);
-        auto pos14_2 = reinterpret_cast<byte*>(&a.GetComponent<Position>(14));
+        auto pos14_2 = reinterpret_cast<Byte*>(&a.GetComponent<Position>(14));
 
         EXPECT_EQ(pos14_0, pos14_1);
         EXPECT_EQ(pos14_0, pos14_2);
@@ -122,7 +122,7 @@ namespace EVA::ECS
         Archetype a(cl, chunkSize);
 
         for (size_t i = 0; i < 20; i++)
-            a.CreateEntity(i);
+            a.CreateEntity(Entity(i));
 
         EXPECT_EQ(std::distance(a.begin<Entity>(), a.end<Entity>()), 20);
 

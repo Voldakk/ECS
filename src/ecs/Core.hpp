@@ -25,6 +25,8 @@
 
 namespace EVA::ECS
 {
-    typedef unsigned char byte;
-    static_assert(sizeof(byte) == 1);
+    using Index = size_t;
+    using Byte  = unsigned char;
+    static_assert(sizeof(Byte) == 1);
+    constexpr size_t DefaultChunkSize = 16384;
 } // namespace EVA::ECS

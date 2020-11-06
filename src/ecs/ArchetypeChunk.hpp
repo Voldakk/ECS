@@ -7,9 +7,6 @@
 
 namespace EVA::ECS
 {
-    constexpr size_t defaultChunkSize = 16384;
-    typedef size_t Index;
-
     /* Data layout examples
      * E = Entity
      * A = ComponentB
@@ -26,9 +23,9 @@ namespace EVA::ECS
 
     struct ComponentInfo
     {
-        ComponentType type = 0;
-        size_t size        = 0;
-        size_t start       = 0;
+        ComponentType type{ 0 };
+        size_t size{ 0 };
+        size_t start{ 0 };
 
         // Allow finding a ComponentInfo by the ComponentType
         struct Predicate
@@ -40,13 +37,13 @@ namespace EVA::ECS
     };
     struct ArchetypeInfo
     {
-        size_t chunkSize        = 0;
-        size_t entitySize       = 0;
-        size_t entitiesPerChunk = 0;
+        size_t chunkSize{ 0 };
+        size_t entitySize{ 0 };
+        size_t entitiesPerChunk{ 0 };
         std::vector<ComponentInfo> componentInfo;
 
-        ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize = defaultChunkSize);
-        Index GetComponentIndex(const ComponentType type) const;
+        explicit ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize = DefaultChunkSize);
+        Index GetComponentIndex(ComponentType type) const;
     };
 
     class ArchetypeChunk
@@ -54,17 +51,16 @@ namespace EVA::ECS
       public:
         template <typename> class Iterator;
 
-      public:
-        ArchetypeChunk(const ArchetypeInfo& archetypeInfo);
-        ~ArchetypeChunk();
+      
+        explicit ArchetypeChunk(const ArchetypeInfo& archetypeInfo);
 
         Index CreateEntity(const Entity& entity);
-        void CopyEntity(const Index intoIndex, ArchetypeChunk& fromChunk, const Index fromIndex);
-        Entity& GetEntity(const Index index);
+        void CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex);
+        Entity& GetEntity(Index index);
         void RemoveLast();
 
-        byte* GetComponent(const ComponentType type, const Index index);
-        byte* GetComponent(const Index archetypeComponentIndex, const Index index);
+        Byte* GetComponent(ComponentType type, Index index);
+        Byte* GetComponent(Index archetypeComponentIndex, Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
 
         Index Count() const { return m_Count; }
@@ -74,18 +70,18 @@ namespace EVA::ECS
         template <typename T> Iterator<T> begin()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(m_Data + m_ArchetypeInfo.componentInfo[i].start);
+            return Iterator<T>(&m_Data[0] + m_ArchetypeInfo.componentInfo[i].start);
         }
         template <typename T> Iterator<T> end()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(m_Data + m_ArchetypeInfo.componentInfo[i].start + m_ArchetypeInfo.componentInfo[i].size * m_Count);
+            return Iterator<T>(&m_Data[0] + m_ArchetypeInfo.componentInfo[i].start + m_ArchetypeInfo.componentInfo[i].size * m_Count);
         }
 
       private:
         const ArchetypeInfo& m_ArchetypeInfo;
-        byte* m_Data;
         Index m_Count;
+        std::vector<Byte> m_Data;
 
       public:
         template <typename T> class Iterator
@@ -97,8 +93,8 @@ namespace EVA::ECS
             using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator() { m_Ptr = nullptr; }
-            Iterator(byte* ptr) { m_Ptr = reinterpret_cast<T*>(ptr); }
+            Iterator() : m_Ptr(nullptr) {}
+            explicit Iterator(Byte* ptr) : m_Ptr(reinterpret_cast<T*>(ptr)) {}
 
             bool operator==(const Iterator& other) { return m_Ptr == other.m_Ptr; }
 
@@ -110,7 +106,7 @@ namespace EVA::ECS
                 return *this;
             }
 
-            Iterator operator++(int)
+            const Iterator operator++(int)
             {
                 Iterator temp(*this);
                 operator++();

@@ -95,8 +95,8 @@ namespace EVA::ECS
 
         for (size_t i = 0; i < 20; i++)
         {
-            ac1.CreateEntity(i);
-            ac2.CreateEntity(100 + i);
+            ac1.CreateEntity(Entity(i));
+            ac2.CreateEntity(Entity(100 + i));
         }
 
         ac1.CopyEntity(5, ac2, 15);
@@ -115,11 +115,11 @@ namespace EVA::ECS
         ArchetypeChunk ac(ai);
 
         for (size_t i = 0; i < 20; i++)
-            ac.CreateEntity(i);
+            ac.CreateEntity(Entity(i));
 
         auto pos14_0 = ac.GetComponent(Position::GetType(), 14);
         auto pos14_1 = ac.GetComponent(1, 14);
-        auto pos14_2 = reinterpret_cast<byte*>(&ac.GetComponent<Position>(14));
+        auto pos14_2 = reinterpret_cast<Byte*>(&ac.GetComponent<Position>(14));
 
         EXPECT_EQ(pos14_0, pos14_1);
         EXPECT_EQ(pos14_0, pos14_2);
@@ -138,7 +138,7 @@ namespace EVA::ECS
         ArchetypeChunk ac(ai);
 
         for (size_t i = 0; i < 20; i++)
-            ac.CreateEntity(i);
+            ac.CreateEntity(Entity(i));
 
         EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
 
