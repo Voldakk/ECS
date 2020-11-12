@@ -6,7 +6,7 @@
 
 #include "ecs/ecs.hpp"
 
-struct Position : public EVA::ECS::Component
+struct Position
 {
     REGISTER_COMPONENT(Position);
 
@@ -16,7 +16,7 @@ struct Position : public EVA::ECS::Component
     Position(int _x, int _y) : x(_x), y(_y) {}
 };
 
-struct Velocity : public EVA::ECS::Component
+struct Velocity
 {
     REGISTER_COMPONENT(Velocity);
 
@@ -26,7 +26,7 @@ struct Velocity : public EVA::ECS::Component
     Velocity(int _x, int _y) : x(_x), y(_y) {}
 };
 
-struct StructComponentA : public EVA::ECS::Component
+struct StructComponentA
 {
     REGISTER_COMPONENT(StructComponentA);
 
@@ -39,27 +39,27 @@ struct StructComponentA : public EVA::ECS::Component
     StructComponentA(int _x, int _y, int _z, short _s, bool _f1, bool _f2) : x(_x), y(_y), z(_z), something(_s), flag1(_f1), flag2(_f2) {}
 };
 
-struct Comp0 : public EVA::ECS::Component
+struct Comp0
 {
     REGISTER_COMPONENT(Comp0);
 };
-struct Comp1 : public EVA::ECS::Component
+struct Comp1
 {
     REGISTER_COMPONENT(Comp1);
 };
-struct Comp2 : public EVA::ECS::Component
+struct Comp2
 {
     REGISTER_COMPONENT(Comp2);
 };
-struct Comp3 : public EVA::ECS::Component
+struct Comp3
 {
     REGISTER_COMPONENT(Comp3);
 };
-struct Comp4 : public EVA::ECS::Component
+struct Comp4
 {
     REGISTER_COMPONENT(Comp4);
 };
-struct Comp5 : public EVA::ECS::Component
+struct Comp5
 {
     REGISTER_COMPONENT(Comp5);
 };

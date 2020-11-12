@@ -15,7 +15,7 @@ namespace EVA::ECS
         entitySize            = sizeof(Entity);
 
         size_t i = 1;
-        for (const auto & t : componentList)
+        for (const auto& t : componentList)
         {
             componentInfo[i].type = t;
             componentInfo[i].size = ComponentMap::s_Info[t.Get()].size;
@@ -69,7 +69,7 @@ namespace EVA::ECS
     void ArchetypeChunk::CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex)
     {
         ECS_ASSERT(intoIndex < m_ArchetypeInfo.entitiesPerChunk);
-        for (const auto & c : m_ArchetypeInfo.componentInfo)
+        for (const auto& c : m_ArchetypeInfo.componentInfo)
         {
             std::memmove(&m_Data[c.start + intoIndex * c.size], &fromChunk.m_Data[c.start + fromIndex * c.size], c.size);
         }
@@ -90,7 +90,7 @@ namespace EVA::ECS
     Byte* ArchetypeChunk::GetComponent(const Index archetypeComponentIndex, const Index index)
     {
         ECS_ASSERT(index < m_Count);
-        return &m_Data[ m_ArchetypeInfo.componentInfo[archetypeComponentIndex].start +
+        return &m_Data[m_ArchetypeInfo.componentInfo[archetypeComponentIndex].start +
         index * m_ArchetypeInfo.componentInfo[archetypeComponentIndex].size];
     }
 

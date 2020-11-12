@@ -27,21 +27,20 @@
 #define REGISTER_COMPONENT(NAME)                                                                                                           \
   private:                                                                                                                                 \
     inline static EVA::ECS::ComponentType s_Type;                                                                                          \
-    inline static size_t s_Size;                                                                                                           \
     BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                         \
     {                                                                                                                                      \
         NAME::s_Type = EVA::ECS::ComponentType(EVA::ECS::ComponentMap::s_IdCounter++);                                                     \
-        NAME::s_Size = sizeof(NAME);                                                                                                       \
         if (NAME::s_Type.Get() >= EVA::ECS::ComponentMap::s_Info.size())                                                                   \
             EVA::ECS::ComponentMap::s_Info.resize(NAME::s_Type.Get() + 1);                                                                 \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].size        = NAME::s_Size;                                                     \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].func        = &EVA::ECS::ComponentMap::CreateT<NAME>;                           \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData = std::make_unique<NAME>();                                         \
+        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].size        = sizeof(NAME);                                                     \
+        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData = std::make_unique<std::vector<EVA::ECS::Byte>>(sizeof(NAME));      \
+        auto* instance                                                 = new NAME();                                                       \
+        std::memmove(EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData->data(), instance, sizeof(NAME));                      \
+        delete instance;                                                                                                                   \
     }                                                                                                                                      \
     END_STATIC_CONSTRUCTOR(NAME)                                                                                                           \
   public:                                                                                                                                  \
     static EVA::ECS::ComponentType GetType() { return s_Type; }                                                                            \
-    static size_t GetSize() { return s_Size; }
 // #define REGISTER_COMPONENT(NAME)
 
 
@@ -65,29 +64,24 @@ namespace EVA::ECS
     inline bool operator<=(const ComponentType& lhs, const ComponentType& rhs) { return !operator>(lhs, rhs); }
     inline bool operator>=(const ComponentType& lhs, const ComponentType& rhs) { return !operator<(lhs, rhs); }
 
-    struct Component;
-
     class ComponentMap
     {
       public:
         struct ComponentInfo
         {
             size_t size{ 0 };
-            std::shared_ptr<Component> (*func)()   = nullptr;
-            std::unique_ptr<Component> defaultData = nullptr;
+            std::unique_ptr<std::vector<Byte>> defaultData = nullptr;
         };
 
         inline static ComponentType::ValueType s_IdCounter{ 0 };
         inline static std::vector<ComponentInfo> s_Info;
 
-        template <typename T> static std::shared_ptr<Component> CreateT() { return std::make_shared<T>(); }
-
         inline static void CreateComponent(ComponentType type, void* data)
         {
-            std::memmove(data, s_Info[type.Get()].defaultData.get(), s_Info[type.Get()].size);
+            std::memmove(data, s_Info[type.Get()].defaultData->data(), s_Info[type.Get()].size);
         }
 
-        inline static Component* DefaultData(ComponentType type) { return s_Info[type.Get()].defaultData.get(); }
+        inline static Byte* DefaultData(ComponentType type) { return s_Info[type.Get()].defaultData->data(); }
     };
 
     class ComponentList
@@ -106,7 +100,6 @@ namespace EVA::ECS
         }
         template <typename T> ComponentList& Add()
         {
-            static_assert(std::is_base_of<Component, T>::value, "T must be derived from component");
             return Add(T::GetType());
         }
 
@@ -118,7 +111,6 @@ namespace EVA::ECS
         }
         template <typename T> ComponentList& Remove()
         {
-            static_assert(std::is_base_of<Component, T>::value, "T must be derived from component");
             return Remove(T::GetType());
         }
 
@@ -126,7 +118,7 @@ namespace EVA::ECS
 
         bool Contains(const ComponentList& other) const
         {
-            for (const auto & i : other.m_Types)
+            for (const auto& i : other.m_Types)
             {
                 if (std::find(m_Types.begin(), m_Types.end(), i) == m_Types.end())
                 {
@@ -151,7 +143,7 @@ namespace EVA::ECS
             std::size_t operator()(const ComponentList& list) const
             {
                 size_t value = 0;
-                for (const auto & type : list)
+                for (const auto& type : list)
                 {
                     value = value * 3 + std::hash<ComponentType::ValueType>()(type.Get());
                 }
@@ -160,13 +152,7 @@ namespace EVA::ECS
         };
     };
 
-    struct Component
-    {
-        REGISTER_COMPONENT(Component);
-        Component() = default;
-    };
-
-    struct Entity : public Component
+    struct Entity
     {
         REGISTER_COMPONENT(Entity);
 

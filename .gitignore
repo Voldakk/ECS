@@ -27,6 +27,9 @@ CMakeFiles/*
 *.sln.docstates
 CMakeSettings.json
 
+#
+.idea/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -47,6 +50,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Oo]ut/
+[Cc]make-build*/
+[Cc][Pp][Tt][Cc][Mm]ake[Bb]uild/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

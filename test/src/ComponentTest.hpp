@@ -14,21 +14,6 @@ namespace EVA::ECS
         EXPECT_EQ(c.GetType(), Comp0::GetType());
         EXPECT_EQ(p.GetType(), Position::GetType());
         EXPECT_EQ(a.GetType(), StructComponentA::GetType());
-
-        EXPECT_EQ(c.GetSize(), Comp0::GetSize());
-        EXPECT_EQ(p.GetSize(), Position::GetSize());
-        EXPECT_EQ(a.GetSize(), StructComponentA::GetSize());
-
-        EXPECT_EQ(Comp0::GetSize(), sizeof(Comp0));
-        EXPECT_EQ(Position::GetSize(), sizeof(Position));
-        EXPECT_EQ(StructComponentA::GetSize(), sizeof(StructComponentA));
-    }
-
-    TEST(ComponentMap, SizeEntries)
-    {
-        EXPECT_EQ(ComponentMap::s_Info[Comp0::GetType().Get()].size, Comp0::GetSize());
-        EXPECT_EQ(ComponentMap::s_Info[Position::GetType().Get()].size, Position::GetSize());
-        EXPECT_EQ(ComponentMap::s_Info[StructComponentA::GetType().Get()].size, StructComponentA::GetSize());
     }
 
     TEST(ComponentMap, DefaultData)
@@ -40,21 +25,6 @@ namespace EVA::ECS
         EXPECT_EQ(memcmp(&a, ComponentMap::DefaultData(a.GetType()), sizeof(StructComponentA)), 0);
     }
 
-    TEST(ComponentMap, CreateT)
-    {
-        Position p;
-        StructComponentA a;
-
-        auto pShared = ComponentMap::CreateT<Position>();
-        auto aShared = ComponentMap::CreateT<StructComponentA>();
-
-        Position* pP         = reinterpret_cast<Position*>(pShared.get());
-        StructComponentA* aP = reinterpret_cast<StructComponentA*>(aShared.get());
-
-        EXPECT_EQ(memcmp(&p, pP, sizeof(Position)), 0);
-        EXPECT_EQ(memcmp(&a, aP, sizeof(StructComponentA)), 0);
-    }
-
     TEST(ComponentMap, CreateComponent)
     {
         Position p;
@@ -63,8 +33,8 @@ namespace EVA::ECS
         void* pData = malloc(sizeof(Position));
         void* aData = malloc(sizeof(StructComponentA));
 
-        ComponentMap::CreateComponent(p.GetType(), pData);
-        ComponentMap::CreateComponent(a.GetType(), aData);
+        ComponentMap::CreateComponent(Position::GetType(), pData);
+        ComponentMap::CreateComponent(StructComponentA::GetType(), aData);
 
         EXPECT_EQ(memcmp(&p, pData, sizeof(Position)), 0);
         EXPECT_EQ(memcmp(&a, aData, sizeof(StructComponentA)), 0);
