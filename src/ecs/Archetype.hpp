@@ -24,6 +24,10 @@ namespace EVA::ECS
         size_t ChunkCount() { return m_Chunks.size(); }
         Index ActiveChunkIndex() { return static_cast<Index>(std::distance(m_Chunks.begin(), m_CurrentChunk)); }
 
+        std::pair<Index, Index>
+        AddEntityAddComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType newType, Byte* data);
+        std::pair<Index, Index> AddEntityRemoveComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType removeType);
+
         Byte* GetComponent(ComponentType type, Index chunk, Index indexInChunk);
         Byte* GetComponent(Index archetypeComponentIndex, Index chunk, Index indexInChunk);
         template <typename T> inline T& GetComponent(const Index chunk, const Index indexInChunk)
@@ -35,8 +39,16 @@ namespace EVA::ECS
         Byte* GetComponent(Index archetypeComponentIndex, Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
 
-        template <typename T> Iterator<T> begin() { return Iterator<T>(m_Chunks.begin(), m_Chunks.end()); }
-        template <typename T> Iterator<T> end() { return Iterator<T>(m_Chunks.end(), m_Chunks.end()); }
+        template <typename T> Iterator<T> begin()
+        {
+            Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
+            return Iterator<T>(m_Chunks.begin(), m_Chunks.end(), i);
+        }
+        template <typename T> Iterator<T> end()
+        {
+            Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
+            return Iterator<T>(m_Chunks.end(), m_Chunks.end(), i);
+        }
 
       private:
         ComponentList m_Components;
@@ -59,12 +71,13 @@ namespace EVA::ECS
             using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd) : m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd)
+            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, Index index)
+            : m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_Index(index)
             {
                 if (m_ChunksIt != m_ChunksEnd)
                 {
-                    m_CompIt   = (*m_ChunksIt)->begin<T>();
-                    m_CompsEnd = (*m_ChunksIt)->end<T>();
+                    m_CompIt   = (*m_ChunksIt)->begin<T>(m_Index);
+                    m_CompsEnd = (*m_ChunksIt)->end<T>(m_Index);
                 }
             }
 
@@ -80,8 +93,8 @@ namespace EVA::ECS
                     ++m_ChunksIt;
                     if (m_ChunksIt != m_ChunksEnd)
                     {
-                        m_CompIt   = (*m_ChunksIt)->begin<T>();
-                        m_CompsEnd = (*m_ChunksIt)->end<T>();
+                        m_CompIt   = (*m_ChunksIt)->begin<T>(m_Index);
+                        m_CompsEnd = (*m_ChunksIt)->end<T>(m_Index);
                     }
                     else
                     {
@@ -108,6 +121,7 @@ namespace EVA::ECS
             ChunkVector::iterator m_ChunksEnd;
             ArchetypeChunk::Iterator<T> m_CompIt;
             ArchetypeChunk::Iterator<T> m_CompsEnd;
+            Index m_Index;
         };
     };
 } // namespace EVA::ECS

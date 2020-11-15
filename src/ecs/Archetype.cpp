@@ -27,7 +27,7 @@ namespace EVA::ECS
         m_EntityCount++;
 
         auto indexInChunk = (*m_CurrentChunk)->CreateEntity(entity);
-        return std::make_pair(m_Chunks.size() - 1, indexInChunk);
+        return std::make_pair(ActiveChunkIndex(), indexInChunk);
     }
 
     Entity Archetype::DestroyEntity(const Index chunk, const Index indexInChunk)
@@ -59,6 +59,39 @@ namespace EVA::ECS
     {
         ECS_ASSERT(chunk <= ActiveChunkIndex());
         return m_Chunks[chunk]->GetComponent(archetypeComponentIndex, indexInChunk);
+    }
+
+    std::pair<Index, Index>
+    Archetype::AddEntityAddComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType newType, Byte* data)
+    {
+        if ((*m_CurrentChunk)->Full())
+        {
+            ++m_CurrentChunk;
+            if (m_CurrentChunk == m_Chunks.end())
+            {
+                AddChunk();
+            }
+        }
+        m_EntityCount++;
+
+        auto indexInChunk = (*m_CurrentChunk)->AddEntityAddComponent(newType, *otherArchetype.m_Chunks[otherChunk].get(), otherIndexInChunk, data);
+        return std::make_pair(ActiveChunkIndex(), indexInChunk);
+    }
+
+    std::pair<Index, Index> Archetype::AddEntityRemoveComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType removeType)
+    {
+        if ((*m_CurrentChunk)->Full())
+        {
+            ++m_CurrentChunk;
+            if (m_CurrentChunk == m_Chunks.end())
+            {
+                AddChunk();
+            }
+        }
+        m_EntityCount++;
+
+        auto indexInChunk = (*m_CurrentChunk)->AddEntityRemoveComponent(removeType, *otherArchetype.m_Chunks[otherChunk].get(), otherIndexInChunk);
+        return std::make_pair(ActiveChunkIndex(), indexInChunk);
     }
 
     Byte* Archetype::GetComponent(const ComponentType type, const Index chunk, const Index indexInChunk)

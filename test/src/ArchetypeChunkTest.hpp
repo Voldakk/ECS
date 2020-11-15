@@ -119,14 +119,14 @@ namespace EVA::ECS
 
         auto pos14_0 = ac.GetComponent(Position::GetType(), 14);
         auto pos14_1 = ac.GetComponent(1, 14);
-        auto pos14_2 = reinterpret_cast<Byte*>(&ac.GetComponent<Position>(14));
+        auto pos14_2 = ToBytes(ac.GetComponent<Position>(14));
 
         EXPECT_EQ(pos14_0, pos14_1);
         EXPECT_EQ(pos14_0, pos14_2);
 
         ac.GetComponent<Position>(14).x = 10;
 
-        EXPECT_EQ(reinterpret_cast<Position*>(pos14_0)->x, 10);
+        EXPECT_EQ(FromBytes<Position>(pos14_0)->x, 10);
         EXPECT_EQ(memcmp(pos14_0, pos14_1, sizeof(Position)), 0);
         EXPECT_EQ(memcmp(pos14_0, pos14_2, sizeof(Position)), 0);
     }
@@ -156,5 +156,104 @@ namespace EVA::ECS
 
         for (i = 0; i < 20; i++)
             EXPECT_EQ(ac.GetComponent<StructComponentA>(i).y, 3 * i);
+    }
+
+    TEST(ArchetypeChunk, AddComponent)
+    {
+        ComponentList cl1({ Position::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai1(cl1);
+        ArchetypeChunk ac1(ai1);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            ac1.CreateEntity(Entity(i));
+            ac1.GetComponent<Position>(i).x = i * 10;
+        }
+
+        ComponentList cl2({ Position::GetType(), Velocity::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai2(cl2);
+        ArchetypeChunk ac2(ai2);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            size_t id = 10 + 1;
+            ac2.CreateEntity(Entity(id));
+            ac2.GetComponent<Position>(i).x = id * 10;
+            ac2.GetComponent<Velocity>(i).x = id * 100;
+        }
+
+        EXPECT_EQ(ac1.Count(), 10);
+        EXPECT_EQ(ac2.Count(), 10);
+
+        for (size_t i = 2; i <= 5; i++)
+        {
+            Velocity v{ (int)i * 100, 0 };
+            ac2.AddEntityAddComponent(Velocity::GetType(), ac1, i, ToBytes(v));
+        }
+
+        EXPECT_EQ(ac1.Count(), 10);
+        EXPECT_EQ(ac2.Count(), 14);
+
+        for (size_t i = 0; i < ac1.Count(); i++)
+        {
+            Entity e = ac1.GetComponent<Entity>(i);
+            EXPECT_EQ(ac1.GetComponent<Position>(i).x, e.id * 10);
+        }
+
+        for (size_t i = 0; i < ac2.Count(); i++)
+        {
+            Entity e = ac2.GetComponent<Entity>(i);
+            EXPECT_EQ(ac2.GetComponent<Position>(i).x, e.id * 10);
+            EXPECT_EQ(ac2.GetComponent<Velocity>(i).x, e.id * 100);
+        }
+    }
+
+    TEST(ArchetypeChunk, RemoveComponent)
+    {
+        ComponentList cl1({ Position::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai1(cl1);
+        ArchetypeChunk ac1(ai1);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            ac1.CreateEntity(Entity(i));
+            ac1.GetComponent<Position>(i).x = i * 10;
+        }
+
+        ComponentList cl2({ Position::GetType(), Velocity::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai2(cl2);
+        ArchetypeChunk ac2(ai2);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            size_t id = 10 + 1;
+            ac2.CreateEntity(Entity(id));
+            ac2.GetComponent<Position>(i).x = id * 10;
+            ac2.GetComponent<Velocity>(i).x = id * 100;
+        }
+
+        EXPECT_EQ(ac1.Count(), 10);
+        EXPECT_EQ(ac2.Count(), 10);
+
+        for (size_t i = 2; i <= 5; i++)
+        {
+            ac1.AddEntityRemoveComponent(Velocity::GetType(), ac2, i);
+        }
+
+        EXPECT_EQ(ac1.Count(), 14);
+        EXPECT_EQ(ac2.Count(), 10);
+
+        for (size_t i = 0; i < ac1.Count(); i++)
+        {
+            Entity e = ac1.GetComponent<Entity>(i);
+            EXPECT_EQ(ac1.GetComponent<Position>(i).x, e.id * 10);
+        }
+
+        for (size_t i = 0; i < ac2.Count(); i++)
+        {
+            Entity e = ac2.GetComponent<Entity>(i);
+            EXPECT_EQ(ac2.GetComponent<Position>(i).x, e.id * 10);
+            EXPECT_EQ(ac2.GetComponent<Velocity>(i).x, e.id * 100);
+        }
     }
 } // namespace EVA::ECS

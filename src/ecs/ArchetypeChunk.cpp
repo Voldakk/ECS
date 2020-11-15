@@ -94,6 +94,55 @@ namespace EVA::ECS
         index * m_ArchetypeInfo.componentInfo[archetypeComponentIndex].size];
     }
 
+    Index ArchetypeChunk::AddEntityAddComponent(ComponentType newType, const ArchetypeChunk& chunk, Index indexInChunk, const Byte* data)
+    {
+        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
+
+        size_t offset = 0;
+        for (size_t i = 0; i < m_ArchetypeInfo.componentInfo.size(); i++)
+        {
+            const auto& comp = m_ArchetypeInfo.componentInfo[i];
+            const auto size  = comp.size;
+            if (comp.type == newType)
+            {
+                std::memmove(&m_Data[comp.start + m_Count * size], data, size);
+                offset--;
+            }
+            else
+            {
+                ECS_ASSERT(comp.type == chunk.m_ArchetypeInfo.componentInfo[i + offset].type);
+                std::memmove(&m_Data[comp.start + m_Count * size],
+                &chunk.m_Data[chunk.m_ArchetypeInfo.componentInfo[i + offset].start + indexInChunk * size], size);
+            }
+        }
+
+        return m_Count++;
+    }
+
+    Index ArchetypeChunk::AddEntityRemoveComponent(ComponentType removeType, const ArchetypeChunk& chunk, Index indexInChunk)
+    {
+        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
+
+        size_t offset = 0;
+        for (size_t i = 0; i < chunk.m_ArchetypeInfo.componentInfo.size(); i++)
+        {
+            const auto& comp = chunk.m_ArchetypeInfo.componentInfo[i];
+            const auto size  = comp.size;
+            if (comp.type == removeType)
+            {
+                offset--;
+            }
+            else
+            {
+                ECS_ASSERT(m_ArchetypeInfo.componentInfo[i + offset].type == comp.type);
+                std::memmove(&m_Data[m_ArchetypeInfo.componentInfo[i + offset].start + m_Count * size],
+                &chunk.m_Data[comp.start + indexInChunk * size], size);
+            }
+        }
+
+        return m_Count++;
+    }
+
     Byte* ArchetypeChunk::GetComponent(const ComponentType type, const Index index)
     {
         ECS_ASSERT(index < m_Count);

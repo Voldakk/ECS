@@ -63,6 +63,9 @@ namespace EVA::ECS
         Byte* GetComponent(Index archetypeComponentIndex, Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
 
+        Index AddEntityAddComponent(ComponentType newType, const ArchetypeChunk& chunk, Index indexInChunk, const Byte* data);
+        Index AddEntityRemoveComponent(ComponentType removeType, const ArchetypeChunk& chunk, Index indexInChunk);
+
         Index Count() const { return m_Count; }
         bool Empty() const { return m_Count == 0; }
         bool Full() const { return m_Count == m_ArchetypeInfo.entitiesPerChunk; }
@@ -70,11 +73,17 @@ namespace EVA::ECS
         template <typename T> Iterator<T> begin()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(&m_Data[0] + m_ArchetypeInfo.componentInfo[i].start);
+            return Iterator<T>(&m_Data[m_ArchetypeInfo.componentInfo[i].start]);
         }
         template <typename T> Iterator<T> end()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
+            return Iterator<T>(&m_Data[0] + m_ArchetypeInfo.componentInfo[i].start + m_ArchetypeInfo.componentInfo[i].size * m_Count);
+        }
+
+        template <typename T> Iterator<T> begin(Index i) { return Iterator<T>(&m_Data[m_ArchetypeInfo.componentInfo[i].start]); }
+        template <typename T> Iterator<T> end(Index i)
+        {
             return Iterator<T>(&m_Data[0] + m_ArchetypeInfo.componentInfo[i].start + m_ArchetypeInfo.componentInfo[i].size * m_Count);
         }
 

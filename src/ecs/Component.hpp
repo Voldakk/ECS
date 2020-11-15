@@ -41,7 +41,7 @@
     END_STATIC_CONSTRUCTOR(NAME)                                                                                                           \
   public:                                                                                                                                  \
     static EVA::ECS::ComponentType GetType() { return s_Type; }                                                                            \
-// #define REGISTER_COMPONENT(NAME)
+    // #define REGISTER_COMPONENT(NAME)
 
 
 namespace EVA::ECS
@@ -98,10 +98,7 @@ namespace EVA::ECS
             m_Types.insert(type);
             return *this;
         }
-        template <typename T> ComponentList& Add()
-        {
-            return Add(T::GetType());
-        }
+        template <typename T> ComponentList& Add() { return Add(T::GetType()); }
 
         ComponentList& Remove(ComponentType type)
         {
@@ -109,10 +106,7 @@ namespace EVA::ECS
             m_Types.erase(type);
             return *this;
         }
-        template <typename T> ComponentList& Remove()
-        {
-            return Remove(T::GetType());
-        }
+        template <typename T> ComponentList& Remove() { return Remove(T::GetType()); }
 
         bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
 

@@ -29,4 +29,9 @@ namespace EVA::ECS
     using Byte  = unsigned char;
     static_assert(sizeof(Byte) == 1);
     constexpr size_t DefaultChunkSize = 16384;
+
+    template <typename T> Byte* ToBytes(T& value) { return reinterpret_cast<Byte*>(&value); }
+    template <typename T> Byte* ToBytes(T* value) { return reinterpret_cast<Byte*>(value); }
+
+    template <typename T> T* FromBytes(Byte* bytes) { return reinterpret_cast<T*>(bytes); }
 } // namespace EVA::ECS
