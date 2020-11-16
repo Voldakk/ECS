@@ -92,6 +92,13 @@ namespace EVA::ECS
         ComponentList() = default;
         ComponentList(const std::initializer_list<ComponentType>& types) : m_Types(types) {}
 
+        template <typename... T> static inline ComponentList Create()
+        {
+            ComponentList cl;
+            (cl.Add<T>(), ...);
+            return cl;
+        }
+
         ComponentList& Add(ComponentType type)
         {
             ECS_ASSERT(std::find(m_Types.begin(), m_Types.end(), type) == m_Types.end());

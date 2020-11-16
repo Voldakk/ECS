@@ -11,7 +11,7 @@ namespace EVA::ECS
     class Archetype
     {
       public:
-        typedef std::vector<std::unique_ptr<ArchetypeChunk>> ChunkVector;
+        using ChunkVector = std::vector<std::unique_ptr<ArchetypeChunk>>;
         template <typename> class Iterator;
 
         explicit Archetype(const ComponentList& components, size_t chunkSize = DefaultChunkSize);
@@ -47,7 +47,7 @@ namespace EVA::ECS
         template <typename T> Iterator<T> end()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(m_Chunks.end(), m_Chunks.end(), i);
+            return Iterator<T>(m_Chunks.end(), i);
         }
 
       private:
@@ -71,14 +71,18 @@ namespace EVA::ECS
             using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, Index index)
-            : m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_Index(index)
+            Iterator()
+            : m_Index(0), m_ChunksIt(ChunkVector::iterator()), m_ChunksEnd(ChunkVector::iterator()),
+              m_CompIt(ArchetypeChunk::Iterator<T>()), m_CompsEnd(ArchetypeChunk::Iterator<T>())
             {
-                if (m_ChunksIt != m_ChunksEnd)
-                {
-                    m_CompIt   = (*m_ChunksIt)->begin<T>(m_Index);
-                    m_CompsEnd = (*m_ChunksIt)->end<T>(m_Index);
-                }
+            }
+
+            Iterator(ChunkVector::iterator chunksEnd, Index index) : m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd), m_Index(index) {}
+
+            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, Index index)
+            : m_Index(index), m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_CompIt((*m_ChunksIt)->begin<T>(m_Index)),
+              m_CompsEnd((*m_ChunksIt)->end<T>(m_Index))
+            {
             }
 
             bool operator==(const Iterator& other) { return m_ChunksIt == other.m_ChunksIt && m_CompIt == other.m_CompIt; }
@@ -114,14 +118,14 @@ namespace EVA::ECS
 
             pointer operator->() { return &(*m_CompIt); }
 
-            reference operator*() { return m_CompIt; }
+            reference operator*() { return *m_CompIt; }
 
           private:
+            Index m_Index;
             ChunkVector::iterator m_ChunksIt;
             ChunkVector::iterator m_ChunksEnd;
             ArchetypeChunk::Iterator<T> m_CompIt;
             ArchetypeChunk::Iterator<T> m_CompsEnd;
-            Index m_Index;
         };
     };
 } // namespace EVA::ECS

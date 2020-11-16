@@ -43,6 +43,16 @@ namespace EVA::ECS
         free(aData);
     }
 
+    TEST(ComponentList, Create)
+    {
+        ComponentList lA = ComponentList::Create<Comp1, Comp3, Comp2>();
+
+        ComponentList lB;
+        lB.Add<Comp1>().Add<Comp3>().Add<Comp2>();
+
+        EXPECT_EQ(lA, lB);
+    }
+
     TEST(ComponentList, AddRemoveContains)
     {
         ComponentList cl;
@@ -67,6 +77,7 @@ namespace EVA::ECS
 
         EXPECT_EQ(lA, lB);
     }
+
     TEST(ComponentList, Contains)
     {
         ComponentList l;

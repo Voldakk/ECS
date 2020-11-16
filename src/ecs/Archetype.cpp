@@ -74,7 +74,7 @@ namespace EVA::ECS
         }
         m_EntityCount++;
 
-        auto indexInChunk = (*m_CurrentChunk)->AddEntityAddComponent(newType, *otherArchetype.m_Chunks[otherChunk].get(), otherIndexInChunk, data);
+        auto indexInChunk = (*m_CurrentChunk)->AddEntityAddComponent(newType, *otherArchetype.m_Chunks[otherChunk], otherIndexInChunk, data);
         return std::make_pair(ActiveChunkIndex(), indexInChunk);
     }
 
@@ -90,7 +90,7 @@ namespace EVA::ECS
         }
         m_EntityCount++;
 
-        auto indexInChunk = (*m_CurrentChunk)->AddEntityRemoveComponent(removeType, *otherArchetype.m_Chunks[otherChunk].get(), otherIndexInChunk);
+        auto indexInChunk = (*m_CurrentChunk)->AddEntityRemoveComponent(removeType, *otherArchetype.m_Chunks[otherChunk], otherIndexInChunk);
         return std::make_pair(ActiveChunkIndex(), indexInChunk);
     }
 

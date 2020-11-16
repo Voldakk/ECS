@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstddef>
-
 #include "Component.hpp"
 #include "Core.hpp"
 

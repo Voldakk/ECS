@@ -1,6 +1,8 @@
 #pragma once
 
 #include "PlatformDetection.hpp"
+#include <cstddef>
+#include <functional>
 
 #ifdef ECS_DEBUG
 #ifdef ECS_PLATFORM_WINDOWS
