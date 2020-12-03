@@ -284,8 +284,6 @@ namespace EVA::ECS
         size_t chunkSize2 = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(Velocity));
         Archetype a2(cl2, chunkSize2);
 
-        auto archetypes = { &a1, &a2 };
-
         for (size_t i = 0; i < 20; i++)
         {
             a1.CreateEntity(Entity(i));
@@ -295,7 +293,10 @@ namespace EVA::ECS
         EXPECT_EQ(a1.EntityCount(), 20);
         EXPECT_EQ(a2.EntityCount(), 20);
 
-        EntityIterator<Entity, Position> it(archetypes);
+        EntityIterator<Entity, Position> it({ &a1, &a2 });
+
+        EXPECT_FALSE(it.Empty());
+        EXPECT_EQ(it.Count(), 40);
 
         for (auto [entity, position] : it)
         {

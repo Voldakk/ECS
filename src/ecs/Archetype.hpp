@@ -11,7 +11,7 @@ namespace EVA::ECS
     class Archetype
     {
       public:
-        using ChunkVector = std::vector<std::unique_ptr<ArchetypeChunk>>;
+        using ChunkVector = std::vector<std::shared_ptr<ArchetypeChunk>>;
         template <typename> class Iterator;
 
         explicit Archetype(const ComponentList& components, size_t chunkSize = DefaultChunkSize);
@@ -20,8 +20,8 @@ namespace EVA::ECS
         Entity DestroyEntity(Index chunk, Index indexInChunk);
         Entity& GetEntity(Index chunk, Index indexInChunk);
 
-        size_t EntityCount() const { return m_EntityCount; }
-        size_t ChunkCount() { return m_Chunks.size(); }
+        Index EntityCount() const { return m_EntityCount; }
+        Index ChunkCount() { return m_Chunks.size(); }
         Index ActiveChunkIndex() { return static_cast<Index>(std::distance(m_Chunks.begin(), m_CurrentChunk)); }
 
         std::pair<Index, Index>
@@ -53,8 +53,7 @@ namespace EVA::ECS
       private:
         ComponentList m_Components;
         ArchetypeInfo m_ArchetypeInfo;
-
-        size_t m_EntityCount;
+        Index m_EntityCount;
 
         ChunkVector m_Chunks;
         ChunkVector::iterator m_CurrentChunk;
@@ -77,7 +76,7 @@ namespace EVA::ECS
             {
             }
 
-            Iterator(ChunkVector::iterator chunksEnd, Index index) : m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd), m_Index(index) {}
+            Iterator(ChunkVector::iterator chunksEnd, Index index) : m_Index(index), m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd) {}
 
             Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, Index index)
             : m_Index(index), m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_CompIt((*m_ChunksIt)->begin<T>(m_Index)),

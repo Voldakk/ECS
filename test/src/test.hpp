@@ -8,7 +8,7 @@
 
 struct Position
 {
-    REGISTER_COMPONENT(Position);
+    EVA_ECS_REGISTER_COMPONENT(Position);
 
     int x, y;
 
@@ -18,7 +18,7 @@ struct Position
 
 struct Velocity
 {
-    REGISTER_COMPONENT(Velocity);
+    EVA_ECS_REGISTER_COMPONENT(Velocity);
 
     int x, y;
 
@@ -28,7 +28,7 @@ struct Velocity
 
 struct StructComponentA
 {
-    REGISTER_COMPONENT(StructComponentA);
+    EVA_ECS_REGISTER_COMPONENT(StructComponentA);
 
     int x, y, z;
     short something;
@@ -41,25 +41,25 @@ struct StructComponentA
 
 struct Comp0
 {
-    REGISTER_COMPONENT(Comp0);
+    EVA_ECS_REGISTER_COMPONENT(Comp0);
 };
 struct Comp1
 {
-    REGISTER_COMPONENT(Comp1);
+    EVA_ECS_REGISTER_COMPONENT(Comp1);
 };
 struct Comp2
 {
-    REGISTER_COMPONENT(Comp2);
+    EVA_ECS_REGISTER_COMPONENT(Comp2);
 };
 struct Comp3
 {
-    REGISTER_COMPONENT(Comp3);
+    EVA_ECS_REGISTER_COMPONENT(Comp3);
 };
 struct Comp4
 {
-    REGISTER_COMPONENT(Comp4);
+    EVA_ECS_REGISTER_COMPONENT(Comp4);
 };
 struct Comp5
 {
-    REGISTER_COMPONENT(Comp5);
+    EVA_ECS_REGISTER_COMPONENT(Comp5);
 };

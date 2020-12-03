@@ -176,7 +176,7 @@ namespace EVA::ECS
 
         for (size_t i = 0; i < 10; i++)
         {
-            size_t id = 10 + 1;
+            size_t id = 10 + i;
             ac2.CreateEntity(Entity(id));
             ac2.GetComponent<Position>(i).x = id * 10;
             ac2.GetComponent<Velocity>(i).x = id * 100;

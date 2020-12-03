@@ -9,25 +9,25 @@
 #include <set>
 #include <vector>
 
-#define BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                     \
-    friend class __GeneratedConstructor##NAME;                                                                                             \
-    struct __GeneratedConstructor##NAME                                                                                                    \
+#define EVA_ECS_BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                             \
+    friend class __EVA_ECS_StaticConstructor##NAME;                                                                                        \
+    struct __EVA_ECS_StaticConstructor##NAME                                                                                               \
     {                                                                                                                                      \
-        __GeneratedConstructor##NAME()
-// #define BEGIN_STATIC_CONSTRUCTOR
+        __EVA_ECS_StaticConstructor##NAME()
+// #define EVA_ECS_BEGIN_STATIC_CONSTRUCTOR
 
 
-#define END_STATIC_CONSTRUCTOR(NAME)                                                                                                       \
+#define EVA_ECS_END_STATIC_CONSTRUCTOR(NAME)                                                                                               \
     }                                                                                                                                      \
     ;                                                                                                                                      \
-    inline static __GeneratedConstructor##NAME cons;
-// #define END_STATIC_CONSTRUCTOR
+    inline static __EVA_ECS_StaticConstructor##NAME cons;
+// #define EVA_ECS_END_STATIC_CONSTRUCTOR
 
 
-#define REGISTER_COMPONENT(NAME)                                                                                                           \
+#define EVA_ECS_REGISTER_COMPONENT(NAME)                                                                                                   \
   private:                                                                                                                                 \
     inline static EVA::ECS::ComponentType s_Type;                                                                                          \
-    BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                         \
+    EVA_ECS_BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                 \
     {                                                                                                                                      \
         NAME::s_Type = EVA::ECS::ComponentType(EVA::ECS::ComponentMap::s_IdCounter++);                                                     \
         if (NAME::s_Type.Get() >= EVA::ECS::ComponentMap::s_Info.size())                                                                   \
@@ -38,10 +38,10 @@
         std::memmove(EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData->data(), instance, sizeof(NAME));                      \
         delete instance;                                                                                                                   \
     }                                                                                                                                      \
-    END_STATIC_CONSTRUCTOR(NAME)                                                                                                           \
+    EVA_ECS_END_STATIC_CONSTRUCTOR(NAME)                                                                                                   \
   public:                                                                                                                                  \
     static EVA::ECS::ComponentType GetType() { return s_Type; }                                                                            \
-    // #define REGISTER_COMPONENT(NAME)
+    // #define EVA_ECS_REGISTER_COMPONENT(NAME)
 
 
 namespace EVA::ECS
@@ -155,15 +155,26 @@ namespace EVA::ECS
 
     struct Entity
     {
-        REGISTER_COMPONENT(Entity);
+        EVA_ECS_REGISTER_COMPONENT(Entity);
 
-        size_t id    = 0;
-        size_t index = 0;
+        EntityId id = 0;
+        Index index = 0;
 
         Entity() = default;
-        explicit Entity(size_t _id) : id(_id) {}
+        explicit Entity(EntityId _id) : id(_id) {}
 
         bool operator==(const Entity& other) const { return id == other.id; }
         bool operator!=(const Entity& other) const { return !(*this == other); }
+    };
+
+    struct EntityLocation
+    {
+        Index archetype, chunk, position;
+        EntityId entityId;
+
+        explicit EntityLocation(Index archetype, Index chunk, Index position, EntityId entityId)
+        : archetype(archetype), chunk(chunk), position(position), entityId(entityId)
+        {
+        }
     };
 } // namespace EVA::ECS

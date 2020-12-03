@@ -21,6 +21,28 @@ namespace EVA::ECS
         {
         }
 
+        Index Count() const
+        {
+            Index count = 0;
+            for (auto& a : m_Archetypes)
+            {
+                count += a->EntityCount();
+            }
+            return count;
+        }
+
+        bool Empty() const
+        {
+            for (auto& a : m_Archetypes)
+            {
+                if (a->EntityCount() > 0)
+                    return false;
+            }
+            return true;
+        }
+
+        Index ArchetypeCount() { return m_Archetypes.size(); }
+
         Iterator begin() { return Iterator(m_Archetypes.begin(), m_Archetypes.end()); }
 
         Iterator end() { return Iterator(m_Archetypes.end()); }

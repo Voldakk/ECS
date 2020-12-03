@@ -49,7 +49,6 @@ namespace EVA::ECS
       public:
         template <typename> class Iterator;
 
-
         explicit ArchetypeChunk(const ArchetypeInfo& archetypeInfo);
 
         Index CreateEntity(const Entity& entity);
@@ -86,7 +85,7 @@ namespace EVA::ECS
         }
 
       private:
-        const ArchetypeInfo& m_ArchetypeInfo;
+        ArchetypeInfo m_ArchetypeInfo;
         Index m_Count;
         std::vector<Byte> m_Data;
 

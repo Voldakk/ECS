@@ -27,8 +27,10 @@
 
 namespace EVA::ECS
 {
-    using Index = size_t;
-    using Byte  = unsigned char;
+    using Index    = size_t;
+    using EntityId = size_t;
+
+    using Byte = unsigned char;
     static_assert(sizeof(Byte) == 1);
     constexpr size_t DefaultChunkSize = 16384;
 

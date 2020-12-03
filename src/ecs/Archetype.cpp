@@ -10,7 +10,7 @@ namespace EVA::ECS
 
     void Archetype::AddChunk()
     {
-        m_Chunks.push_back(std::make_unique<ArchetypeChunk>(m_ArchetypeInfo));
+        m_Chunks.push_back(std::make_shared<ArchetypeChunk>(m_ArchetypeInfo));
         m_CurrentChunk = m_Chunks.end() - 1;
     }
 
