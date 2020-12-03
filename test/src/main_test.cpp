@@ -1,6 +1,7 @@
 #include "ArchetypeChunkTest.hpp"
 #include "ArchetypeTest.hpp"
 #include "ComponentTest.hpp"
+#include "EngineTest.hpp"
 
 /*
 TEST(TestSuiteName, TestName) {
