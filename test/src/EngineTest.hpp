@@ -121,6 +121,28 @@ namespace EVA::ECS
         EXPECT_EQ(memcmp(engine.GetComponent(entities[5], IntComp::GetType()), &value, sizeof(IntComp)), 0);
     }
 
+    TEST(Engine, CreateWithData)
+    {
+        Engine engine;
+        auto cl = ComponentList::Create<Position, Velocity, StructComponentA>();
+
+        Position p         = Position(123, 456);
+        Velocity v         = Velocity(321, 654);
+        StructComponentA s = StructComponentA(11, 22, 33, 22, true, false);
+        auto data          = CombineBytes(p, v, s);
+
+        Entity e1 = engine.CreateEntity(cl, &data[0]);
+        Entity e2 = engine.CreateEntityData(p, v, s);
+
+        EXPECT_EQ(p, engine.GetComponent<Position>(e1));
+        EXPECT_EQ(v, engine.GetComponent<Velocity>(e1));
+        EXPECT_EQ(s, engine.GetComponent<StructComponentA>(e1));
+
+        EXPECT_EQ(p, engine.GetComponent<Position>(e2));
+        EXPECT_EQ(v, engine.GetComponent<Velocity>(e2));
+        EXPECT_EQ(s, engine.GetComponent<StructComponentA>(e2));
+    }
+
     TEST(Engine, GetArchetypes)
     {
         Engine engine;

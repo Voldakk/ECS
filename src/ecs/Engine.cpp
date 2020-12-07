@@ -6,7 +6,9 @@ namespace EVA::ECS
 
     Entity Engine::CreateEntity() { return CreateEntity(ComponentList()); }
 
-    Entity Engine::CreateEntity(const ComponentList& components)
+    Entity Engine::CreateEntity(const ComponentList& components) { return CreateEntity(components, nullptr); }
+
+    Entity Engine::CreateEntity(const ComponentList& components, const Byte* data)
     {
         auto [archetypeIndex, archetype] = GetOrCreateArchetype(components);
 
@@ -19,7 +21,7 @@ namespace EVA::ECS
 
         auto entity            = GetNextEntity();
         entity.index           = index;
-        auto [chunk, position] = archetype.CreateEntity(entity);
+        auto [chunk, position] = data == nullptr ? archetype.CreateEntity(entity) : archetype.CreateEntity(entity, data);
 
         if (index == m_EntityLocations.size())
         {

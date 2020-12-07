@@ -52,6 +52,7 @@ namespace EVA::ECS
         explicit ArchetypeChunk(ArchetypeInfo archetypeInfo);
 
         Index CreateEntity(const Entity& entity);
+        Index CreateEntity(const Entity& entity, const Byte* data);
         void CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex);
         Entity& GetEntity(Index index);
         void RemoveLast();

@@ -66,6 +66,26 @@ namespace EVA::ECS
         return m_Count - 1;
     }
 
+    Index ArchetypeChunk::CreateEntity(const Entity& entity, const Byte* data)
+    {
+        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
+
+        // Copy the entity component
+        std::memmove(&m_Data[m_Count * sizeof(Entity)], &entity, sizeof(Entity));
+
+        // Starting at 1 to skip Entity
+        Index dataIndex = 0;
+        for (size_t i = 1; i < m_ArchetypeInfo.componentInfo.size(); i++)
+        {
+            const auto& c = m_ArchetypeInfo.componentInfo[i];
+            std::memmove(&m_Data[c.start + m_Count * c.size], &data[dataIndex], c.size);
+            dataIndex += c.size;
+        }
+
+        m_Count++;
+        return m_Count - 1;
+    }
+
     void ArchetypeChunk::CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex)
     {
         ECS_ASSERT(intoIndex < m_ArchetypeInfo.entitiesPerChunk);

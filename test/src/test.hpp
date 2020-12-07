@@ -15,7 +15,7 @@ struct Position
     Position() : x(0), y(0) {}
     Position(int _x, int _y) : x(_x), y(_y) {}
 };
-inline bool operator==(const Position& lhs, const Position& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+inline bool operator==(const Position& a, const Position& b) { return a.x == b.x && a.y == b.y; }
 
 struct Velocity
 {
@@ -26,7 +26,7 @@ struct Velocity
     Velocity() : x(0), y(0) {}
     Velocity(int _x, int _y) : x(_x), y(_y) {}
 };
-inline bool operator==(const Velocity& lhs, const Velocity& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+inline bool operator==(const Velocity& a, const Velocity& b) { return a.x == b.x && a.y == b.y; }
 
 struct StructComponentA
 {
@@ -40,11 +40,17 @@ struct StructComponentA
     StructComponentA() : x(0), y(0), z(0), something(123), flag1(false), flag2(true) {}
     StructComponentA(int _x, int _y, int _z, short _s, bool _f1, bool _f2) : x(_x), y(_y), z(_z), something(_s), flag1(_f1), flag2(_f2) {}
 };
+inline bool operator==(const StructComponentA& a, const StructComponentA& b)
+{
+    return a.x == b.x && a.y == b.y && a.z == b.z && a.something == b.something && a.flag1 == b.flag1 && a.flag2 == b.flag2;
+}
 
 struct IntComp
 {
     EVA_ECS_REGISTER_COMPONENT(IntComp);
     int value;
+    IntComp() : value(0) {}
+    IntComp(int v) : value(v) {}
 };
 inline bool operator==(const IntComp& lhs, const IntComp& rhs) { return lhs.value == rhs.value; }
 

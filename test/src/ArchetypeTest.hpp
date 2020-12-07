@@ -115,6 +115,23 @@ namespace EVA::ECS
         EXPECT_EQ(memcmp(pos2_3, pos11, sizeof(Position)), 0);
     }
 
+    TEST(Archetype, CreateWithData)
+    {
+        Archetype a(ComponentList::Create<Position, Velocity, StructComponentA>());
+
+        Position p         = Position(123, 456);
+        Velocity v         = Velocity(321, 654);
+        StructComponentA s = StructComponentA(11, 22, 33, 22, true, false);
+        auto data          = CombineBytes(p, v, s);
+
+        Entity e(111);
+        auto [ch, ci] = a.CreateEntity(e, &data[0]);
+
+        EXPECT_EQ(p, a.GetComponent<Position>(0));
+        EXPECT_EQ(v, a.GetComponent<Velocity>(0));
+        EXPECT_EQ(s, a.GetComponent<StructComponentA>(0));
+    }
+
     TEST(Archetype, Iterator)
     {
         ComponentList cl({ Position::GetType(), StructComponentA::GetType() });

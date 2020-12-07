@@ -14,7 +14,7 @@ namespace EVA::ECS
         m_ActiveChunkIndex = m_Chunks.size() - 1;
     }
 
-    std::pair<Index, Index> Archetype::CreateEntity(const Entity& entity)
+    void Archetype::ReserveChunk()
     {
         if (m_Chunks[m_ActiveChunkIndex]->Full())
         {
@@ -27,9 +27,23 @@ namespace EVA::ECS
                 ++m_ActiveChunkIndex;
             }
         }
+    }
+
+    std::pair<Index, Index> Archetype::CreateEntity(const Entity& entity)
+    {
+        ReserveChunk();
         m_EntityCount++;
 
         auto indexInChunk = m_Chunks[m_ActiveChunkIndex]->CreateEntity(entity);
+        return std::make_pair(ActiveChunkIndex(), indexInChunk);
+    }
+
+    std::pair<Index, Index> Archetype::CreateEntity(const Entity& entity, const Byte* data)
+    {
+        ReserveChunk();
+        m_EntityCount++;
+
+        auto indexInChunk = m_Chunks[m_ActiveChunkIndex]->CreateEntity(entity, data);
         return std::make_pair(ActiveChunkIndex(), indexInChunk);
     }
 
@@ -67,17 +81,7 @@ namespace EVA::ECS
     std::pair<Index, Index>
     Archetype::AddEntityAddComponent(Archetype& otherArchetype, const Index otherChunk, const Index otherIndexInChunk, const ComponentType newType, const Byte* data)
     {
-        if (m_Chunks[m_ActiveChunkIndex]->Full())
-        {
-            if (m_ActiveChunkIndex == m_Chunks.size() - 1)
-            {
-                AddChunk();
-            }
-            else
-            {
-                ++m_ActiveChunkIndex;
-            }
-        }
+        ReserveChunk();
         m_EntityCount++;
 
         auto indexInChunk =
@@ -88,17 +92,7 @@ namespace EVA::ECS
     std::pair<Index, Index>
     Archetype::AddEntityRemoveComponent(Archetype& otherArchetype, const Index otherChunk, const Index otherIndexInChunk, const ComponentType removeType)
     {
-        if (m_Chunks[m_ActiveChunkIndex]->Full())
-        {
-            if (m_ActiveChunkIndex == m_Chunks.size() - 1)
-            {
-                AddChunk();
-            }
-            else
-            {
-                ++m_ActiveChunkIndex;
-            }
-        }
+        ReserveChunk();
         m_EntityCount++;
 
         auto indexInChunk = m_Chunks[m_ActiveChunkIndex]->AddEntityRemoveComponent(removeType, *otherArchetype.m_Chunks[otherChunk], otherIndexInChunk);

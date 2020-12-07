@@ -1,6 +1,7 @@
 #include "ArchetypeChunkTest.hpp"
 #include "ArchetypeTest.hpp"
 #include "ComponentTest.hpp"
+#include "CoreTest.hpp"
 #include "EngineTest.hpp"
 #include "SystemTest.hpp"
 

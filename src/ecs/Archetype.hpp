@@ -17,6 +17,7 @@ namespace EVA::ECS
         explicit Archetype(const ComponentList& components, size_t chunkSize = DefaultChunkSize);
 
         std::pair<Index, Index> CreateEntity(const Entity& entity);
+        std::pair<Index, Index> CreateEntity(const Entity& entity, const Byte* data);
         Entity DestroyEntity(const Index chunk, const Index indexInChunk);
         Entity& GetEntity(const Index chunk, const Index indexInChunk);
 
@@ -62,6 +63,7 @@ namespace EVA::ECS
         ChunkVector::difference_type m_ActiveChunkIndex;
 
         void AddChunk();
+        void ReserveChunk();
 
       public:
         template <typename T> class Iterator
