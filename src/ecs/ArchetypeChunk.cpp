@@ -42,8 +42,8 @@ namespace EVA::ECS
 
     // ArchetypeChunk
 
-    ArchetypeChunk::ArchetypeChunk(const ArchetypeInfo& archetypeInfo)
-    : m_ArchetypeInfo(archetypeInfo), m_Count(0), m_Data(m_ArchetypeInfo.chunkSize)
+    ArchetypeChunk::ArchetypeChunk(ArchetypeInfo archetypeInfo)
+    : m_ArchetypeInfo(std::move(archetypeInfo)), m_Count(0), m_Data(m_ArchetypeInfo.chunkSize)
     {
         ECS_ASSERT(memset(&m_Data[0], 0, m_ArchetypeInfo.chunkSize) != nullptr);
     }

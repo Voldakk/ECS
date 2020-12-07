@@ -49,7 +49,7 @@ namespace EVA::ECS
       public:
         template <typename> class Iterator;
 
-        explicit ArchetypeChunk(const ArchetypeInfo& archetypeInfo);
+        explicit ArchetypeChunk(ArchetypeInfo archetypeInfo);
 
         Index CreateEntity(const Entity& entity);
         void CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex);

@@ -37,5 +37,9 @@ namespace EVA::ECS
     template <typename T> Byte* ToBytes(T& value) { return reinterpret_cast<Byte*>(&value); }
     template <typename T> Byte* ToBytes(T* value) { return reinterpret_cast<Byte*>(value); }
 
+    template <typename T> const Byte* ToBytes(const T& value) { return reinterpret_cast<const Byte*>(&value); }
+    template <typename T> const Byte* ToBytes(const T* value) { return reinterpret_cast<const Byte*>(value); }
+
     template <typename T> T* FromBytes(Byte* bytes) { return reinterpret_cast<T*>(bytes); }
+    template <typename T> const T* FromBytes(const Byte* bytes) { return reinterpret_cast<const T*>(bytes); }
 } // namespace EVA::ECS

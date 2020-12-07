@@ -22,9 +22,13 @@ namespace EVA::ECS
         auto [chunk, position] = archetype.CreateEntity(entity);
 
         if (index == m_EntityLocations.size())
+        {
             m_EntityLocations.emplace_back(EntityLocation(archetypeIndex, chunk, position, entity.id));
+        }
         else
+        {
             m_EntityLocations[index] = EntityLocation(archetypeIndex, chunk, position, entity.id);
+        }
 
         return entity;
     }
@@ -44,8 +48,13 @@ namespace EVA::ECS
     {
         auto it = m_ArchetypeMap.find(components);
         if (it != m_ArchetypeMap.end())
+        {
             return (*it).second;
-        return std::nullopt;
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
 
     Archetype& Engine::GetArchetype(Index index) { return m_Archetypes[index]; }
@@ -56,9 +65,53 @@ namespace EVA::ECS
         for (auto [key, value] : m_ArchetypeMap)
         {
             if (key.Contains(components) && (allowEmpty || m_Archetypes[value].EntityCount() > 0))
+            {
                 archetypes.push_back(&m_Archetypes[value]);
+            }
         }
         return archetypes;
+    }
+
+    void Engine::AddComponent(Entity& entity, ComponentType type) { AddComponent(entity, type, ComponentMap::DefaultData(type)); }
+
+    void Engine::AddComponent(Entity& entity, ComponentType type, const Byte* data)
+    {
+        const auto& loc = m_EntityLocations[entity.index];
+        ECS_ASSERT(entity.id == loc.entityId);
+        Archetype& oldArchetype = GetArchetype(loc.archetype);
+
+        ComponentList types = oldArchetype.GetComponents();
+        types.Add(type);
+        auto [newArchetypeIndex, newArchetype] = GetOrCreateArchetype(types);
+
+        Archetype& archetype = GetArchetype(loc.archetype); // GetOrCreateArchetype may invalidate the refference to archetype
+
+        auto [newChunk, newPosition] = newArchetype.AddEntityAddComponent(archetype, loc.chunk, loc.position, type, data);
+
+        auto moved = archetype.DestroyEntity(loc.chunk, loc.position);
+
+        m_EntityLocations[moved.index]  = EntityLocation(loc.archetype, loc.chunk, loc.position, moved.id);
+        m_EntityLocations[entity.index] = EntityLocation(newArchetypeIndex, newChunk, newPosition, entity.id);
+    }
+
+    void Engine::RemoveComponent(Entity& entity, ComponentType type)
+    {
+        const auto& loc = m_EntityLocations[entity.index];
+        ECS_ASSERT(entity.id == loc.entityId);
+        Archetype& oldArchetype = GetArchetype(loc.archetype);
+
+        ComponentList types = oldArchetype.GetComponents();
+        types.Remove(type);
+        auto [newArchetypeIndex, newArchetype] = GetOrCreateArchetype(types);
+
+        Archetype& archetype = GetArchetype(loc.archetype); // GetOrCreateArchetype may invalidate the refference to archetype
+
+        auto [newChunk, newPosition] = newArchetype.AddEntityRemoveComponent(archetype, loc.chunk, loc.position, type);
+
+        auto moved = archetype.DestroyEntity(loc.chunk, loc.position);
+
+        m_EntityLocations[moved.index]  = EntityLocation(loc.archetype, loc.chunk, loc.position, moved.id);
+        m_EntityLocations[entity.index] = EntityLocation(newArchetypeIndex, newChunk, newPosition, entity.id);
     }
 
     Entity Engine::GetNextEntity()

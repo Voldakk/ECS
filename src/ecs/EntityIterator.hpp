@@ -43,7 +43,16 @@ namespace EVA::ECS
 
         Index ArchetypeCount() { return m_Archetypes.size(); }
 
-        Iterator begin() { return Iterator(m_Archetypes.begin(), m_Archetypes.end()); }
+        Iterator begin()
+        {
+            return Empty() ? end() :
+                             Iterator(m_Archetypes.begin(), m_Archetypes.end()
+#ifdef ECS_DEBUG
+                                                            ,
+                             Count()
+#endif // ECS_DEBUG
+                             );
+        }
 
         Iterator end() { return Iterator(m_Archetypes.end()); }
 
@@ -66,9 +75,19 @@ namespace EVA::ECS
             {
             }
 
-            Iterator(ArchetypeIterator begin, ArchetypeIterator end)
+            Iterator(ArchetypeIterator begin,
+            ArchetypeIterator end
+#ifdef ECS_DEBUG
+            ,
+            Index maxCount
+#endif // ECS_DEBUG
+            )
             : m_ArchetypeIterator(begin), m_ArchetypeEnd(end), m_Iterators(std::tuple<Archetype::Iterator<T>...>(((*begin)->begin<T>())...)),
               m_IteratorsEnd(std::tuple<Archetype::Iterator<T>...>(((*begin)->end<T>())...))
+#ifdef ECS_DEBUG
+              ,
+              m_Count(0), m_MaxCount(maxCount)
+#endif // ECS_DEBUG
             {
             }
 
@@ -95,6 +114,12 @@ namespace EVA::ECS
                         m_IteratorsEnd = std::tuple<Archetype::Iterator<T>...>(((*m_ArchetypeIterator)->end<T>())...);
                     }
                 }
+
+#ifdef ECS_DEBUG
+                m_Count++;
+                ECS_ASSERT(m_Count <= m_MaxCount)
+#endif // ECS_DEBUG
+
                 return *this;
             }
 
@@ -112,6 +137,11 @@ namespace EVA::ECS
             ArchetypeIterator m_ArchetypeEnd;
             std::tuple<Archetype::Iterator<T>...> m_Iterators;
             std::tuple<Archetype::Iterator<T>...> m_IteratorsEnd;
+
+#ifdef ECS_DEBUG
+            Index m_Count;
+            Index m_MaxCount;
+#endif // ECS_DEBUG
         };
     };
 } // namespace EVA::ECS

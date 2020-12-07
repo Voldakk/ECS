@@ -9,40 +9,20 @@
 #include <set>
 #include <vector>
 
-#define EVA_ECS_BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                             \
-    friend class __EVA_ECS_StaticConstructor##NAME;                                                                                        \
-    struct __EVA_ECS_StaticConstructor##NAME                                                                                               \
-    {                                                                                                                                      \
-        __EVA_ECS_StaticConstructor##NAME()
-// #define EVA_ECS_BEGIN_STATIC_CONSTRUCTOR
-
-
-#define EVA_ECS_END_STATIC_CONSTRUCTOR(NAME)                                                                                               \
-    }                                                                                                                                      \
-    ;                                                                                                                                      \
-    inline static __EVA_ECS_StaticConstructor##NAME cons;
-// #define EVA_ECS_END_STATIC_CONSTRUCTOR
-
-
-#define EVA_ECS_REGISTER_COMPONENT(NAME)                                                                                                   \
+#define EVA_ECS_REGISTER_COMPONENT(TYPE)                                                                                                   \
   private:                                                                                                                                 \
     inline static EVA::ECS::ComponentType s_Type;                                                                                          \
-    EVA_ECS_BEGIN_STATIC_CONSTRUCTOR(NAME)                                                                                                 \
+                                                                                                                                           \
+    friend class StaticConstructor;                                                                                                        \
+    struct StaticConstructor                                                                                                               \
     {                                                                                                                                      \
-        NAME::s_Type = EVA::ECS::ComponentType(EVA::ECS::ComponentMap::s_IdCounter++);                                                     \
-        if (NAME::s_Type.Get() >= EVA::ECS::ComponentMap::s_Info.size())                                                                   \
-            EVA::ECS::ComponentMap::s_Info.resize(NAME::s_Type.Get() + 1);                                                                 \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].size        = sizeof(NAME);                                                     \
-        EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData = std::make_unique<std::vector<EVA::ECS::Byte>>(sizeof(NAME));      \
-        auto* instance                                                 = new NAME();                                                       \
-        std::memmove(EVA::ECS::ComponentMap::s_Info[NAME::s_Type.Get()].defaultData->data(), instance, sizeof(NAME));                      \
-        delete instance;                                                                                                                   \
-    }                                                                                                                                      \
-    EVA_ECS_END_STATIC_CONSTRUCTOR(NAME)                                                                                                   \
+        StaticConstructor() { TYPE::s_Type = EVA::ECS::ComponentMap::Add<TYPE>(); }                                                        \
+    };                                                                                                                                     \
+    inline static StaticConstructor cons;                                                                                                  \
+                                                                                                                                           \
   public:                                                                                                                                  \
-    static EVA::ECS::ComponentType GetType() { return s_Type; }                                                                            \
-    // #define EVA_ECS_REGISTER_COMPONENT(NAME)
-
+    static EVA::ECS::ComponentType GetType() { return s_Type; }
+// #define EVA_ECS_REGISTER_COMPONENT(TYPE)
 
 namespace EVA::ECS
 {
@@ -82,6 +62,23 @@ namespace EVA::ECS
         }
 
         inline static Byte* DefaultData(ComponentType type) { return s_Info[type.Get()].defaultData->data(); }
+
+        template <typename T> inline static ComponentType Add()
+        {
+            ComponentType type = ComponentType(s_IdCounter++);
+
+            if (type.Get() >= s_Info.size())
+                s_Info.resize(type.Get() + 1);
+
+            s_Info[type.Get()].size        = sizeof(T);
+            s_Info[type.Get()].defaultData = std::make_unique<std::vector<EVA::ECS::Byte>>(sizeof(T));
+
+            auto* instance = new T();
+            std::memmove(s_Info[type.Get()].defaultData->data(), instance, sizeof(T));
+            delete instance;
+
+            return type;
+        }
     };
 
     class ComponentList

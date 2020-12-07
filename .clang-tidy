@@ -1,5 +1,5 @@
 ---
-Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm-*,-modernize-use-trailing-return-type,-misc-non-private-member-variables-in-classes,-clang-diagnostic-c++17-extensions'
+Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm-*,-modernize-use-trailing-return-type,-misc-non-private-member-variables-in-classes,-clang-diagnostic-c++17-extensions,-readability-avoid-const-params-in-decls'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none

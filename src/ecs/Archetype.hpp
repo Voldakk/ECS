@@ -17,37 +17,40 @@ namespace EVA::ECS
         explicit Archetype(const ComponentList& components, size_t chunkSize = DefaultChunkSize);
 
         std::pair<Index, Index> CreateEntity(const Entity& entity);
-        Entity DestroyEntity(Index chunk, Index indexInChunk);
-        Entity& GetEntity(Index chunk, Index indexInChunk);
+        Entity DestroyEntity(const Index chunk, const Index indexInChunk);
+        Entity& GetEntity(const Index chunk, const Index indexInChunk);
 
         Index EntityCount() const { return m_EntityCount; }
-        Index ChunkCount() { return m_Chunks.size(); }
-        Index ActiveChunkIndex() { return static_cast<Index>(std::distance(m_Chunks.begin(), m_CurrentChunk)); }
+        Index ChunkCount() const { return m_Chunks.size(); }
+        Index ActiveChunkIndex() const { return m_ActiveChunkIndex; }
+        const ArchetypeInfo& GetInfo() const { return m_ArchetypeInfo; }
+        const ComponentList& GetComponents() const { return m_Components; }
 
         std::pair<Index, Index>
-        AddEntityAddComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType newType, Byte* data);
-        std::pair<Index, Index> AddEntityRemoveComponent(Archetype& otherArchetype, Index otherChunk, Index otherIndexInChunk, ComponentType removeType);
+        AddEntityAddComponent(Archetype& otherArchetype, const Index otherChunk, const Index otherIndexInChunk, const ComponentType newType, const Byte* data);
+        std::pair<Index, Index>
+        AddEntityRemoveComponent(Archetype& otherArchetype, const Index otherChunk, const Index otherIndexInChunk, const ComponentType removeType);
 
-        Byte* GetComponent(ComponentType type, Index chunk, Index indexInChunk);
-        Byte* GetComponent(Index archetypeComponentIndex, Index chunk, Index indexInChunk);
+        Byte* GetComponent(const ComponentType type, const Index chunk, const Index indexInChunk);
+        Byte* GetComponent(const Index archetypeComponentIndex, const Index chunk, const Index indexInChunk);
         template <typename T> inline T& GetComponent(const Index chunk, const Index indexInChunk)
         {
             return *reinterpret_cast<T*>(GetComponent(T::GetType(), chunk, indexInChunk));
         }
 
-        Byte* GetComponent(ComponentType type, Index index);
-        Byte* GetComponent(Index archetypeComponentIndex, Index index);
+        Byte* GetComponent(const ComponentType type, const Index index);
+        Byte* GetComponent(const Index archetypeComponentIndex, const Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
 
         template <typename T> Iterator<T> begin()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(m_Chunks.begin(), m_Chunks.end(), i);
+            return Iterator<T>(m_Chunks.begin(), m_Chunks.begin() + m_ActiveChunkIndex + 1, i);
         }
         template <typename T> Iterator<T> end()
         {
             Index i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
-            return Iterator<T>(m_Chunks.end(), i);
+            return Iterator<T>(m_Chunks.begin() + m_ActiveChunkIndex + 1, i);
         }
 
       private:
@@ -56,7 +59,7 @@ namespace EVA::ECS
         Index m_EntityCount;
 
         ChunkVector m_Chunks;
-        ChunkVector::iterator m_CurrentChunk;
+        Index m_ActiveChunkIndex;
 
         void AddChunk();
 
