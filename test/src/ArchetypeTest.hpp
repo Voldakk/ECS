@@ -207,6 +207,38 @@ namespace EVA::ECS
             EXPECT_EQ(a2.GetComponent<Position>(i).x, e.id * 10);
             EXPECT_EQ(a2.GetComponent<Velocity>(i).x, e.id * 100);
         }
+
+        while (a2.EntityCount() > 0)
+        {
+            a2.DestroyEntity(0, 0);
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 20);
+        EXPECT_EQ(a2.EntityCount(), 0);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            Entity e = a1.GetComponent<Entity>(0, 0);
+            Velocity v{ (int)e.id * 100, 0 };
+            a2.AddEntityAddComponent(a1, 0, 0, Velocity::GetType(), ToBytes(v));
+            a1.DestroyEntity(0, 0);
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 10);
+        EXPECT_EQ(a2.EntityCount(), 10);
+
+        for (size_t i = 0; i < a1.EntityCount(); i++)
+        {
+            Entity e = a1.GetComponent<Entity>(i);
+            EXPECT_EQ(a1.GetComponent<Position>(i).x, e.id * 10);
+        }
+
+        for (size_t i = 0; i < a2.EntityCount(); i++)
+        {
+            Entity e = a2.GetComponent<Entity>(i);
+            EXPECT_EQ(a2.GetComponent<Position>(i).x, e.id * 10);
+            EXPECT_EQ(a2.GetComponent<Velocity>(i).x, e.id * 100);
+        }
     }
 
     TEST(Archetype, RemoveComponent)
@@ -259,6 +291,37 @@ namespace EVA::ECS
 
         EXPECT_EQ(a1.EntityCount(), 30);
         EXPECT_EQ(a2.EntityCount(), 20);
+
+        for (size_t i = 0; i < a1.EntityCount(); i++)
+        {
+            Entity e = a1.GetComponent<Entity>(i);
+            EXPECT_EQ(a1.GetComponent<Position>(i).x, e.id * 10);
+        }
+
+        for (size_t i = 0; i < a2.EntityCount(); i++)
+        {
+            Entity e = a2.GetComponent<Entity>(i);
+            EXPECT_EQ(a2.GetComponent<Position>(i).x, e.id * 10);
+            EXPECT_EQ(a2.GetComponent<Velocity>(i).x, e.id * 100);
+        }
+
+        while (a1.EntityCount() > 0)
+        {
+            a1.DestroyEntity(0, 0);
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 0);
+        EXPECT_EQ(a2.EntityCount(), 20);
+
+        for (size_t i = 0; i < 10; i++)
+        {
+            Entity e = a2.GetComponent<Entity>(0, 0);
+            a1.AddEntityRemoveComponent(a2, 0, 0, Velocity::GetType());
+            a2.DestroyEntity(0, 0);
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 10);
+        EXPECT_EQ(a2.EntityCount(), 10);
 
         for (size_t i = 0; i < a1.EntityCount(); i++)
         {

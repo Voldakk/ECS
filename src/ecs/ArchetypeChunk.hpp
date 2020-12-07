@@ -58,7 +58,7 @@ namespace EVA::ECS
 
         Byte* GetComponent(ComponentType type, Index index);
         Byte* GetComponent(Index archetypeComponentIndex, Index index);
-        template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
+        template <typename T> inline T& GetComponent(const Index index) { return *FromBytes<T>(GetComponent(T::GetType(), index)); }
 
         Index AddEntityAddComponent(ComponentType newType, const ArchetypeChunk& chunk, Index indexInChunk, const Byte* data);
         Index AddEntityRemoveComponent(ComponentType removeType, const ArchetypeChunk& chunk, Index indexInChunk);
@@ -100,7 +100,7 @@ namespace EVA::ECS
             using iterator_category = std::forward_iterator_tag;
 
             Iterator() : m_Ptr(nullptr) {}
-            explicit Iterator(Byte* ptr) : m_Ptr(reinterpret_cast<T*>(ptr)) {}
+            explicit Iterator(Byte* ptr) : m_Ptr(FromBytes<T>(ptr)) {}
 
             bool operator==(const Iterator& other) { return m_Ptr == other.m_Ptr; }
 

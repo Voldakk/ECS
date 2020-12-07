@@ -101,6 +101,26 @@ namespace EVA::ECS
         }
     }
 
+    TEST(Engine, GetComponent)
+    {
+        Engine engine;
+
+        std::vector<Entity> entities;
+        for (size_t i = 0; i < 10; i++)
+            entities.push_back(engine.CreateEntity(ComponentList::Create<IntComp>()));
+
+        EntityIterator<Entity, IntComp> it(engine.GetArchetypes<IntComp>());
+        for (auto [e, i] : it)
+        {
+            i.value = e.id + 10000;
+        }
+
+        EXPECT_EQ(engine.GetComponent<IntComp>(entities[2]).value, 2 + 10000);
+
+        IntComp value = { 10000 + 5 };
+        EXPECT_EQ(memcmp(engine.GetComponent(entities[5], IntComp::GetType()), &value, sizeof(IntComp)), 0);
+    }
+
     TEST(Engine, GetArchetypes)
     {
         Engine engine;
@@ -338,6 +358,45 @@ namespace EVA::ECS
                 }
             }
             EXPECT_EQ(count, posvelCount * 2);
+        }
+
+        size_t addPosCount = noneCount;
+
+        for (size_t i = 0; i < noneCount; i++)
+        {
+            engine.DeleteEntity(entities[i]);
+        }
+        for (size_t i = 0; i < addPosCount; i++)
+        {
+            entities[i] = engine.CreateEntity(cl);
+            engine.AddComponent<Position>(entities[i], pData);
+        }
+        {
+            EntityIterator<Entity, IntComp> it(engine.GetArchetypes<IntComp>());
+            for (auto [e, i] : it)
+            {
+                i.value = e.id + 10000;
+            }
+        }
+        {
+            EntityIterator<Entity, IntComp, Position> it(engine.GetArchetypes<IntComp, Position>());
+            EXPECT_EQ(it.Count(), posCount + posvelCount + noneCount);
+            EXPECT_EQ(it.ArchetypeCount(), 2);
+            size_t count = 0;
+            for (auto [e, i, p] : it)
+            {
+                ASSERT_EQ(i.value, e.id + 10000);
+                if (p == pData)
+                {
+                    count++;
+                }
+                else
+                {
+                    ASSERT_EQ(p.x, e.id * 2);
+                    ASSERT_EQ(p.y, i.value * 3);
+                }
+            }
+            EXPECT_EQ(count, posvelCount + noneCount);
         }
     }
 

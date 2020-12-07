@@ -78,7 +78,7 @@ namespace EVA::ECS
     Entity& ArchetypeChunk::GetEntity(const Index index)
     {
         ECS_ASSERT(index < m_Count);
-        return *reinterpret_cast<Entity*>(&m_Data[index * sizeof(Entity)]);
+        return *FromBytes<Entity>(&m_Data[index * sizeof(Entity)]);
     }
 
     void ArchetypeChunk::RemoveLast()

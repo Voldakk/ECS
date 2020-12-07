@@ -35,12 +35,12 @@ namespace EVA::ECS
         Byte* GetComponent(const Index archetypeComponentIndex, const Index chunk, const Index indexInChunk);
         template <typename T> inline T& GetComponent(const Index chunk, const Index indexInChunk)
         {
-            return *reinterpret_cast<T*>(GetComponent(T::GetType(), chunk, indexInChunk));
+            return *FromBytes<T>(GetComponent(T::GetType(), chunk, indexInChunk));
         }
 
         Byte* GetComponent(const ComponentType type, const Index index);
         Byte* GetComponent(const Index archetypeComponentIndex, const Index index);
-        template <typename T> inline T& GetComponent(const Index index) { return *reinterpret_cast<T*>(GetComponent(T::GetType(), index)); }
+        template <typename T> inline T& GetComponent(const Index index) { return *FromBytes<T>(GetComponent(T::GetType(), index)); }
 
         template <typename T> Iterator<T> begin()
         {

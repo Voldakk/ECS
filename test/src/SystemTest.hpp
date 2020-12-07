@@ -56,8 +56,8 @@ namespace EVA::ECS
         {
             p.x = 0;
             p.y = 0;
-            v.x = e.id * 10;
-            v.y = -e.id * 10;
+            v.x = (int)e.id * 10;
+            v.y = (int)e.id * -10;
         }
 
         engine.AddSystem<MovementSystem>();
@@ -69,8 +69,8 @@ namespace EVA::ECS
 
         for (auto [e, p, v] : EntityIterator<Entity, Position, Velocity>(engine.GetArchetypes<Position, Velocity>()))
         {
-            EXPECT_EQ(p.x, e.id * 10 * 100);
-            EXPECT_EQ(p.y, -e.id * 10 * 100);
+            EXPECT_EQ(p.x, (int)e.id * 10 * 100);
+            EXPECT_EQ(p.y, (int)e.id * -10 * 100);
         }
     }
 } // namespace EVA::ECS

@@ -42,6 +42,9 @@ namespace EVA::ECS
         template <typename T> void RemoveComponent(Entity& entity);
         void RemoveComponent(Entity& entity, const ComponentType type);
 
+        template <typename T> inline T& GetComponent(Entity& entity);
+        Byte* GetComponent(Entity& entity, const ComponentType type);
+
         template <typename T> T* AddSystem();
 
         void UpdateSystems();
@@ -78,6 +81,13 @@ namespace EVA::ECS
 
     template <typename T> inline void Engine::RemoveComponent(Entity& entity) { RemoveComponent(entity, T::GetType()); }
 
+    template <typename T> inline T& Engine::GetComponent(Entity& entity)
+    {
+        const auto& loc = m_EntityLocations[entity.index];
+        ECS_ASSERT(entity.id == loc.entityId);
+        return GetArchetype(loc.archetype).GetComponent<T>(loc.chunk, loc.position);
+    }
+
     template <typename T> inline T* Engine::AddSystem()
     {
         m_Systems.push_back(std::make_shared<T>());
@@ -93,7 +103,7 @@ namespace EVA::ECS
 
       public:
         virtual inline void Init() {}
-        virtual inline void Update() {}
+        virtual inline void Update() = 0;
 
       protected:
         Engine* m_Engine;
