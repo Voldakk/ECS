@@ -114,6 +114,14 @@ namespace EVA::ECS
         m_EntityLocations[entity.index] = EntityLocation(newArchetypeIndex, newChunk, newPosition, entity.id);
     }
 
+    void Engine::UpdateSystems()
+    {
+        for (const auto& s : m_Systems)
+        {
+            s->Update();
+        }
+    }
+
     Entity Engine::GetNextEntity()
     {
         m_EntityCount++;

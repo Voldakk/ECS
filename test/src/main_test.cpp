@@ -2,6 +2,7 @@
 #include "ArchetypeTest.hpp"
 #include "ComponentTest.hpp"
 #include "EngineTest.hpp"
+#include "SystemTest.hpp"
 
 /*
 TEST(TestSuiteName, TestName) {

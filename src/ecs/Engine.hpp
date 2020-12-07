@@ -7,9 +7,11 @@
 #include "Archetype.hpp"
 #include "Component.hpp"
 #include "Core.hpp"
+#include "EntityIterator.hpp"
 
 namespace EVA::ECS
 {
+    class System;
     class Engine
     {
       public:
@@ -40,6 +42,10 @@ namespace EVA::ECS
         template <typename T> void RemoveComponent(Entity& entity);
         void RemoveComponent(Entity& entity, const ComponentType type);
 
+        template <typename T> T* AddSystem();
+
+        void UpdateSystems();
+
       private:
         Index m_EntityIdCounter;
         Index m_EntityCount;
@@ -49,6 +55,8 @@ namespace EVA::ECS
 
         ArchetypeMap m_ArchetypeMap;
         std::vector<Archetype> m_Archetypes;
+
+        std::vector<std::shared_ptr<System>> m_Systems;
 
         Entity GetNextEntity();
 
@@ -69,4 +77,30 @@ namespace EVA::ECS
     }
 
     template <typename T> inline void Engine::RemoveComponent(Entity& entity) { RemoveComponent(entity, T::GetType()); }
+
+    template <typename T> inline T* Engine::AddSystem()
+    {
+        m_Systems.push_back(std::make_shared<T>());
+        auto system      = (T*)m_Systems[m_Systems.size() - 1].get();
+        system->m_Engine = this;
+        system->Init();
+        return system;
+    }
+
+    class System
+    {
+        friend Engine;
+
+      public:
+        virtual inline void Init() {}
+        virtual inline void Update() {}
+
+      protected:
+        Engine* m_Engine;
+
+        template <typename... T> inline EntityIterator<Entity, T...> GetEntityIterator()
+        {
+            return EntityIterator<Entity, T...>(m_Engine->GetArchetypes(ComponentList::Create<T...>(), false));
+        }
+    };
 } // namespace EVA::ECS
