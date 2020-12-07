@@ -11,7 +11,7 @@ namespace EVA::ECS
         EXPECT_EQ(engine.EntityCount(), 0);
         EXPECT_EQ(engine.ArchetypeCount(), 0);
 
-        auto cl1      = ComponentList().Add<Position>();
+        auto cl1      = ComponentList::Create<Position>();
         size_t count0 = 100;
         size_t count1 = 200;
 
@@ -39,7 +39,7 @@ namespace EVA::ECS
         Engine engine;
 
         auto cl0      = ComponentList();
-        auto cl1      = ComponentList().Add<Position>();
+        auto cl1      = ComponentList::Create<Position>();
         size_t count0 = 100;
         size_t count1 = 200;
 
@@ -125,7 +125,7 @@ namespace EVA::ECS
     {
         Engine engine;
 
-        ComponentList cl[3] = { ComponentList().Add<Position>(), ComponentList().Add<Velocity>(), ComponentList().Add<Position>().Add<Velocity>() };
+        ComponentList cl[3] = { ComponentList::Create<Position>(), ComponentList::Create<Velocity>(), ComponentList::Create<Position, Velocity>() };
         size_t count[3]  = { 200, 300, 400 };
         auto countPos    = count[0] + count[2];
         auto countVel    = count[1] + count[2];
@@ -142,19 +142,19 @@ namespace EVA::ECS
         EXPECT_EQ(engine.EntityCount(), countTotal);
 
         {
-            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList().Add<Position>(), false));
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList::Create<Position>(), false));
             EXPECT_EQ(it.Count(), countPos);
             EXPECT_FALSE(it.Empty());
             EXPECT_EQ(it.ArchetypeCount(), 2);
         }
         {
-            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList().Add<Velocity>(), false));
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList::Create<Velocity>(), false));
             EXPECT_EQ(it.Count(), countVel);
             EXPECT_FALSE(it.Empty());
             EXPECT_EQ(it.ArchetypeCount(), 2);
         }
         {
-            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList().Add<Position>().Add<Velocity>(), false));
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentList::Create<Position, Velocity>(), false));
             EXPECT_EQ(it.Count(), countPosVel);
             EXPECT_FALSE(it.Empty());
             EXPECT_EQ(it.ArchetypeCount(), 1);

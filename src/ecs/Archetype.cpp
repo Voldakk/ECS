@@ -3,7 +3,7 @@
 namespace EVA::ECS
 {
     Archetype::Archetype(const ComponentList& components, size_t chunkSize)
-    : m_Components(components), m_ArchetypeInfo(components, chunkSize), m_EntityCount(0)
+    : m_Components(components), m_ArchetypeInfo(components, chunkSize), m_EntityCount(0), m_ActiveChunkIndex(0)
     {
         AddChunk();
     }

@@ -68,7 +68,9 @@ namespace EVA::ECS
             ComponentType type = ComponentType(s_IdCounter++);
 
             if (type.Get() >= s_Info.size())
+            {
                 s_Info.resize(type.Get() + 1);
+            }
 
             s_Info[type.Get()].size        = sizeof(T);
             s_Info[type.Get()].defaultData = std::make_unique<std::vector<EVA::ECS::Byte>>(sizeof(T));

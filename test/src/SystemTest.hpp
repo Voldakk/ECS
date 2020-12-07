@@ -11,7 +11,11 @@ namespace EVA::ECS
         class TestSystem : public System
         {
           public:
-            virtual void Init() override { s_Init++; }
+            virtual void Init() override
+            {
+                s_Init++;
+                ASSERT_NE(GetEngine(), nullptr);
+            }
             virtual void Update() override { s_Update++; }
         };
 

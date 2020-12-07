@@ -7,7 +7,7 @@
 #include "Archetype.hpp"
 #include "Component.hpp"
 #include "Core.hpp"
-#include "EntityIterator.hpp"
+#include "System.hpp"
 
 namespace EVA::ECS
 {
@@ -96,21 +96,4 @@ namespace EVA::ECS
         system->Init();
         return system;
     }
-
-    class System
-    {
-        friend Engine;
-
-      public:
-        virtual inline void Init() {}
-        virtual inline void Update() = 0;
-
-      protected:
-        Engine* m_Engine;
-
-        template <typename... T> inline EntityIterator<Entity, T...> GetEntityIterator()
-        {
-            return EntityIterator<Entity, T...>(m_Engine->GetArchetypes(ComponentList::Create<T...>(), false));
-        }
-    };
 } // namespace EVA::ECS

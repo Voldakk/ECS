@@ -6,3 +6,4 @@
 #include "../../src/ecs/Core.hpp"
 #include "../../src/ecs/Engine.hpp"
 #include "../../src/ecs/EntityIterator.hpp"
+#include "../../src/ecs/System.hpp"

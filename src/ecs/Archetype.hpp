@@ -59,7 +59,7 @@ namespace EVA::ECS
         Index m_EntityCount;
 
         ChunkVector m_Chunks;
-        Index m_ActiveChunkIndex;
+        ChunkVector::difference_type m_ActiveChunkIndex;
 
         void AddChunk();
 

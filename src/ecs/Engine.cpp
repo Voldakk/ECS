@@ -151,7 +151,8 @@ namespace EVA::ECS
         }
         else
         {
-            return std::make_pair(m_Archetypes.size() - 1, std::reference_wrapper<Archetype>(CreateArchetype(components)));
+            auto& archetype = CreateArchetype(components);
+            return std::make_pair(m_Archetypes.size() - 1, std::reference_wrapper<Archetype>(archetype));
         }
     }
 } // namespace EVA::ECS
