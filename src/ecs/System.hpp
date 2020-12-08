@@ -17,7 +17,7 @@ namespace EVA::ECS
         virtual inline void Update() = 0;
 
       protected:
-        Engine* GetEngine();
+        Engine& GetEngine();
         template <typename... T> inline EntityIterator<Entity, T...> GetEntityIterator()
         {
             return EntityIterator<Entity, T...>(GetArchetypes(ComponentList::Create<T...>()));

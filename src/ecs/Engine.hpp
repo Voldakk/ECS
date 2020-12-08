@@ -23,7 +23,7 @@ namespace EVA::ECS
         Entity CreateEntity(const ComponentList& components);
         Entity CreateEntity(const ComponentList& components, const Byte* data);
 
-        template <typename... T> Entity CreateEntityData(const T&... components);
+        template <typename... T> Entity CreateEntityFromComponents(const T&... components);
 
         void DeleteEntity(const Entity& entity);
 
@@ -70,7 +70,7 @@ namespace EVA::ECS
         std::pair<Index, Archetype&> GetOrCreateArchetype(const ComponentList& components);
     };
 
-    template <typename... T> inline Entity Engine::CreateEntityData(const T&... components)
+    template <typename... T> inline Entity Engine::CreateEntityFromComponents(const T&... components)
     {
         auto data = CombineBytes(components...);
         return CreateEntity(ComponentList::Create<T...>(), &data[0]);

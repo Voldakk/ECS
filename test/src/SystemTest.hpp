@@ -14,7 +14,7 @@ namespace EVA::ECS
             virtual void Init() override
             {
                 s_Init++;
-                ASSERT_NE(GetEngine(), nullptr);
+                ASSERT_NE(&GetEngine(), nullptr);
             }
             virtual void Update() override { s_Update++; }
         };

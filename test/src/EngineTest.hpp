@@ -132,7 +132,7 @@ namespace EVA::ECS
         auto data          = CombineBytes(p, v, s);
 
         Entity e1 = engine.CreateEntity(cl, &data[0]);
-        Entity e2 = engine.CreateEntityData(p, v, s);
+        Entity e2 = engine.CreateEntityFromComponents(p, v, s);
 
         EXPECT_EQ(p, engine.GetComponent<Position>(e1));
         EXPECT_EQ(v, engine.GetComponent<Velocity>(e1));

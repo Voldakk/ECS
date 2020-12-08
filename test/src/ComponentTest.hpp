@@ -56,15 +56,15 @@ namespace EVA::ECS
     TEST(ComponentList, AddRemoveContains)
     {
         ComponentList cl;
-        EXPECT_EQ(cl.size(), 0);
+        EXPECT_EQ(cl.Count(), 0);
         EXPECT_FALSE(cl.Contains(Comp0::GetType()));
 
         cl.Add<Comp0>();
-        EXPECT_EQ(cl.size(), 1);
+        EXPECT_EQ(cl.Count(), 1);
         EXPECT_TRUE(cl.Contains(Comp0::GetType()));
 
         cl.Remove<Comp0>();
-        EXPECT_EQ(cl.size(), 0);
+        EXPECT_EQ(cl.Count(), 0);
         EXPECT_FALSE(cl.Contains(Comp0::GetType()));
     }
 

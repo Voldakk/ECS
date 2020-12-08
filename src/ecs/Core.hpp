@@ -2,7 +2,9 @@
 
 #include "PlatformDetection.hpp"
 #include <cstddef>
+#include <cstring>
 #include <functional>
+#include <vector>
 
 #ifdef ECS_DEBUG
 #ifdef ECS_PLATFORM_WINDOWS
@@ -32,30 +34,37 @@ namespace EVA::ECS
 
     using Byte = unsigned char;
     static_assert(sizeof(Byte) == 1);
-    constexpr size_t DefaultChunkSize = 16384;
+    constexpr size_t DefaultChunkSize        = 16384;
+    constexpr size_t DefaultCommandQueueSize = 4096;
 
-    template <typename T> Byte* ToBytes(T& value) { return reinterpret_cast<Byte*>(&value); }
-    template <typename T> Byte* ToBytes(T* value) { return reinterpret_cast<Byte*>(value); }
+    template <typename T> inline Byte* ToBytes(T& value) { return reinterpret_cast<Byte*>(&value); }
+    template <typename T> inline Byte* ToBytes(T* value) { return reinterpret_cast<Byte*>(value); }
 
-    template <typename T> const Byte* ToBytes(const T& value) { return reinterpret_cast<const Byte*>(&value); }
-    template <typename T> const Byte* ToBytes(const T* value) { return reinterpret_cast<const Byte*>(value); }
+    template <typename T> inline const Byte* ToBytes(const T& value) { return reinterpret_cast<const Byte*>(&value); }
+    template <typename T> inline const Byte* ToBytes(const T* value) { return reinterpret_cast<const Byte*>(value); }
 
-    template <typename T> T PostAdd(T& value, T diff)
+    template <typename T> inline T* FromBytes(Byte* bytes) { return reinterpret_cast<T*>(bytes); }
+    template <typename T> inline const T* FromBytes(const Byte* bytes) { return reinterpret_cast<const T*>(bytes); }
+
+    template <typename... T> inline constexpr size_t SizeOf = (sizeof(T) + ...);
+
+    template <typename T> T inline PostAdd(T& value, T diff)
     {
         T temp = value;
         value += diff;
         return temp;
     }
 
-    template <typename... T> std::vector<Byte> CombineBytes(const T&... items)
+    template <typename... T> inline void CopyInto(std::vector<Byte>& buffer, Index& index, const T&... items)
     {
-        constexpr size_t size = (sizeof(T) + ...);
-        std::vector<Byte> data(size);
-        size_t index = 0;
-        (std::memmove(&data[PostAdd(index, sizeof(T))], &items, sizeof(T)), ...);
-        return data;
+        (std::memmove(&buffer[PostAdd(index, sizeof(T))], &items, sizeof(T)), ...);
     }
 
-    template <typename T> T* FromBytes(Byte* bytes) { return reinterpret_cast<T*>(bytes); }
-    template <typename T> const T* FromBytes(const Byte* bytes) { return reinterpret_cast<const T*>(bytes); }
+    template <typename... T> inline std::vector<Byte> CombineBytes(const T&... items)
+    {
+        std::vector<Byte> data(SizeOf<T...>);
+        Index index = 0;
+        CopyInto(data, index, items...);
+        return data;
+    }
 } // namespace EVA::ECS

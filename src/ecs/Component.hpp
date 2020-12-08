@@ -90,6 +90,7 @@ namespace EVA::ECS
       public:
         ComponentList() = default;
         ComponentList(const std::initializer_list<ComponentType>& types) : m_Types(types) {}
+        explicit ComponentList(std::set<ComponentType>& types) : m_Types(std::move(types)) {}
 
         template <typename... T> static inline ComponentList Create()
         {
@@ -130,9 +131,16 @@ namespace EVA::ECS
 
         bool Contains(const ComponentType& type) const { return std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end(); }
 
-        size_t size() const { return m_Types.size(); }
+        size_t Count() const { return m_Types.size(); }
 
-        std::set<ComponentType>::iterator begin() { return m_Types.begin(); }
+        const std::set<ComponentType>& GetTypes() { return m_Types; }
+        const
+
+        std::set<ComponentType>::iterator
+        begin()
+        {
+            return m_Types.begin();
+        }
         std::set<ComponentType>::iterator end() { return m_Types.end(); }
         std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
         std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }

@@ -8,7 +8,7 @@ namespace EVA::ECS
 
     ArchetypeInfo::ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize) : chunkSize(_chunkSize)
     {
-        componentInfo.resize(componentList.size() + 1); // +1 for the required entity component
+        componentInfo.resize(componentList.Count() + 1); // +1 for the required entity component
 
         componentInfo[0].type = Entity::GetType();
         componentInfo[0].size = sizeof(Entity);
