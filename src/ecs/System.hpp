@@ -13,6 +13,7 @@ namespace EVA::ECS
         friend Engine;
 
       public:
+        virtual ~System() = default;
         virtual inline void Init() {}
         virtual inline void Update() = 0;
 
