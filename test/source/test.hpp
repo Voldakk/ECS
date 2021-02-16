@@ -1,8 +1,6 @@
 #pragma once
 
-#pragma warning(push, 0)
-#include <gtest/gtest.h>
-#pragma warning(pop)
+#include "EVA/Test/Test.hpp"
 
 #include "ecs/ecs.hpp"
 
@@ -16,6 +14,7 @@ struct Position
     Position(int _x, int _y) : x(_x), y(_y) {}
 };
 inline bool operator==(const Position& a, const Position& b) { return a.x == b.x && a.y == b.y; }
+inline bool operator!=(const Position& lhs, const Position& rhs) { return !(lhs == rhs); }
 
 struct Velocity
 {
@@ -27,6 +26,7 @@ struct Velocity
     Velocity(int _x, int _y) : x(_x), y(_y) {}
 };
 inline bool operator==(const Velocity& a, const Velocity& b) { return a.x == b.x && a.y == b.y; }
+inline bool operator!=(const Velocity& lhs, const Velocity& rhs) { return !(lhs == rhs); }
 
 struct StructComponentA
 {
@@ -44,6 +44,7 @@ inline bool operator==(const StructComponentA& a, const StructComponentA& b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z && a.something == b.something && a.flag1 == b.flag1 && a.flag2 == b.flag2;
 }
+inline bool operator!=(const StructComponentA& lhs, const StructComponentA& rhs) { return !(lhs == rhs); }
 
 struct IntComp
 {
@@ -53,6 +54,7 @@ struct IntComp
     IntComp(int v) : value(v) {}
 };
 inline bool operator==(const IntComp& lhs, const IntComp& rhs) { return lhs.value == rhs.value; }
+inline bool operator!=(const IntComp& lhs, const IntComp& rhs) { return !(lhs == rhs); }
 
 
 struct Comp0

@@ -1,0 +1,3 @@
+[submodule "test/dependencies/test"]
+	path = test/dependencies/test
+	url = https://github.com/Voldakk/Test

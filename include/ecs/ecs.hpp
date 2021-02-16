@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../src/ecs/Archetype.hpp"
-#include "../../src/ecs/ArchetypeChunk.hpp"
-#include "../../src/ecs/CommandQueue.hpp"
-#include "../../src/ecs/Component.hpp"
-#include "../../src/ecs/Core.hpp"
-#include "../../src/ecs/Engine.hpp"
-#include "../../src/ecs/EntityIterator.hpp"
-#include "../../src/ecs/System.hpp"
+#include "../../source/ecs/Archetype.hpp"
+#include "../../source/ecs/ArchetypeChunk.hpp"
+#include "../../source/ecs/CommandQueue.hpp"
+#include "../../source/ecs/Component.hpp"
+#include "../../source/ecs/Core.hpp"
+#include "../../source/ecs/Engine.hpp"
+#include "../../source/ecs/EntityIterator.hpp"
+#include "../../source/ecs/System.hpp"

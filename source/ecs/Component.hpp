@@ -116,6 +116,7 @@ namespace EVA::ECS
         template <typename T> ComponentList& Remove() { return Remove(T::GetType()); }
 
         bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
+        bool operator!=(const ComponentList& other) const { return !(*this == other); }
 
         bool Contains(const ComponentList& other) const
         {
