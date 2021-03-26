@@ -48,6 +48,8 @@ namespace EVA::ECS
 
     template <typename... T> inline constexpr size_t SizeOf = (sizeof(T) + ...);
 
+    template <typename... T> inline constexpr size_t CountOf = sizeof...(T);
+
     template <typename T> T inline PostAdd(T& value, T diff)
     {
         T temp = value;

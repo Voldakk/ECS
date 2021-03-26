@@ -4,170 +4,94 @@
 
 namespace EVA::ECS
 {
-    // ArchetypeInfo
+    // ArchetypeChunk 
 
-    ArchetypeInfo::ArchetypeInfo(const ComponentList& componentList, size_t _chunkSize) : chunkSize(_chunkSize)
+    template <typename... T> Index ArchetypeChunk<T...>::CreateEntity(const Entity& entity)
     {
-        componentInfo.resize(componentList.Count() + 1); // +1 for the required entity component
-
-        componentInfo[0].type = Entity::GetType();
-        componentInfo[0].size = sizeof(Entity);
-        entitySize            = sizeof(Entity);
-
-        size_t i = 1;
-        for (const auto& t : componentList)
-        {
-            componentInfo[i].type = t;
-            componentInfo[i].size = ComponentMap::s_Info[t.Get()].size;
-            entitySize += componentInfo[i].size;
-            i++;
-        }
-
-        entitiesPerChunk = chunkSize / entitySize;
-
-        size_t offset = 0;
-        for (auto& c : componentInfo)
-        {
-            c.start = offset;
-            offset += c.size * entitiesPerChunk;
-        }
-    }
-
-    Index ArchetypeInfo::GetComponentIndex(const ComponentType type) const
-    {
-        auto it = std::find_if(componentInfo.begin(), componentInfo.end(), ComponentInfo::Predicate(type));
-        ECS_ASSERT(it != componentInfo.end());
-        return static_cast<Index>(std::distance(componentInfo.begin(), it));
-    }
-
-    // ArchetypeChunk
-
-    ArchetypeChunk::ArchetypeChunk(ArchetypeInfo archetypeInfo)
-    : m_ArchetypeInfo(std::move(archetypeInfo)), m_Count(0), m_Data(m_ArchetypeInfo.chunkSize)
-    {
-        ECS_ASSERT(memset(&m_Data[0], 0, m_ArchetypeInfo.chunkSize) != nullptr);
-    }
-
-    Index ArchetypeChunk::CreateEntity(const Entity& entity)
-    {
-        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
-
+        ECS_ASSERT(m_Count < m_Size);
         // Copy the entity component
-        std::memmove(&m_Data[m_Count * sizeof(Entity)], &entity, sizeof(Entity));
-
-        // Starting at 1 to skip Entity
-        for (size_t i = 1; i < m_ArchetypeInfo.componentInfo.size(); i++)
-        {
-            const auto& c = m_ArchetypeInfo.componentInfo[i];
-            std::memmove(&m_Data[c.start + m_Count * c.size], ComponentMap::DefaultData(c.type), c.size);
-        }
+        std::get<std::vector<Entity>>(m_Components)[m_Count] = entity;
+        // Reset the other components
+        ((std::get<std::vector<T>>(m_Components)[m_Count] = T()), ...);
 
         m_Count++;
         return m_Count - 1;
     }
 
-    Index ArchetypeChunk::CreateEntity(const Entity& entity, const Byte* data)
+    template <typename... T> 
+    Index ArchetypeChunk<T...>::CreateEntity(const Entity& entity, const std::tuple<T...> components)
     {
-        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
-
+        ECS_ASSERT(m_Count < m_Size);
         // Copy the entity component
-        std::memmove(&m_Data[m_Count * sizeof(Entity)], &entity, sizeof(Entity));
-
-        // Starting at 1 to skip Entity
-        Index dataIndex = 0;
-        for (size_t i = 1; i < m_ArchetypeInfo.componentInfo.size(); i++)
-        {
-            const auto& c = m_ArchetypeInfo.componentInfo[i];
-            std::memmove(&m_Data[c.start + m_Count * c.size], &data[dataIndex], c.size);
-            dataIndex += c.size;
-        }
+        std::get<std::vector<Entity>>(m_Components)[m_Count] = entity;
+        // Copy the other components
+        ((std::get<std::vector<T>>(m_Components)[m_Count] = std::get<T>(components)), ...);
 
         m_Count++;
         return m_Count - 1;
     }
 
-    void ArchetypeChunk::CopyEntity(Index intoIndex, ArchetypeChunk& fromChunk, Index fromIndex)
-    {
-        ECS_ASSERT(intoIndex < m_ArchetypeInfo.entitiesPerChunk);
-        for (const auto& c : m_ArchetypeInfo.componentInfo)
-        {
-            std::memmove(&m_Data[c.start + intoIndex * c.size], &fromChunk.m_Data[c.start + fromIndex * c.size], c.size);
-        }
-    }
-
-    Entity& ArchetypeChunk::GetEntity(const Index index)
+    template <typename... T> 
+    Entity& ArchetypeChunk<T...>::GetEntity(const Index index)
     {
         ECS_ASSERT(index < m_Count);
-        return *FromBytes<Entity>(&m_Data[index * sizeof(Entity)]);
+        return std::get<std::vector<Entity>>(m_Components)[index];
     }
 
-    void ArchetypeChunk::RemoveLast()
+    template <typename... T> 
+    void ArchetypeChunk<T...>::RemoveLast()
     {
         ECS_ASSERT(m_Count > 0);
         m_Count--;
     }
 
-    Byte* ArchetypeChunk::GetComponent(const Index archetypeComponentIndex, const Index index)
+    template <typename... T> template <typename U> inline U& ArchetypeChunk<T...>::GetComponent(const Index index)
     {
-        ECS_ASSERT(index < m_Count);
-        return &m_Data[m_ArchetypeInfo.componentInfo[archetypeComponentIndex].start +
-        index * m_ArchetypeInfo.componentInfo[archetypeComponentIndex].size];
+        return std::get<std::vector<U>>(m_Components)[index];
     }
 
-    Index ArchetypeChunk::AddEntityAddComponent(ComponentType newType, const ArchetypeChunk& chunk, Index indexInChunk, const Byte* data)
+    template <typename... T>
+    template <typename... U>
+    void ArchetypeChunk<T...>::CopyFrom(const ArchetypeChunk<U...>& fromChunk, Index fromIndex, Index toIndex)
     {
-        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
+        ECS_ASSERT(intoIndex < m_Size);
+        // Copy the entity component
+        std::get<std::vector<Entity>>(m_Components)[toIndex] = std::get<std::vector<Entity>>(fromChunk.m_Components)[fromIndex];
+        // Copy the other components
+        ((std::get<std::vector<T>>(m_Components)[toIndex] = std::get<std::vector<T>>(fromChunk.m_Components)[fromIndex]), ...);
+    }
 
-        size_t offset = 0;
-        for (size_t i = 0; i < m_ArchetypeInfo.componentInfo.size(); i++)
-        {
-            const auto& comp = m_ArchetypeInfo.componentInfo[i];
-            const auto size  = comp.size;
-            if (comp.type == newType)
-            {
-                std::memmove(&m_Data[comp.start + m_Count * size], data, size);
-                offset--;
-            }
-            else
-            {
-                ECS_ASSERT(comp.type == chunk.m_ArchetypeInfo.componentInfo[i + offset].type);
-                std::memmove(&m_Data[comp.start + m_Count * size],
-                &chunk.m_Data[chunk.m_ArchetypeInfo.componentInfo[i + offset].start + indexInChunk * size], size);
-            }
-        }
+    template <typename... T>
+    template <typename... U>
+    void ArchetypeChunk<T...>::CopyTo(ArchetypeChunk<U...>& toChunk, Index toIndex, Index fromIndex)
+    {
+        ECS_ASSERT(intoIndex < m_Size);
+        // Copy the entity component
+        std::get<std::vector<Entity>>(toChunk.m_Components)[toIndex] = std::get<std::vector<Entity>>(m_Components)[fromIndex];
+        // Copy the other components
+        ((std::get<std::vector<T>>(toChunk.m_Components)[toIndex] = std::get<std::vector<T>>(m_Components)[fromIndex]), ...);
+    }
+
+    template <typename... T>
+    template <typename U>
+    Index ArchetypeChunk<T...>::AddEntityAddComponent(const ArchetypeChunk& fromChunk, const Index fromIndex, const U& newComponent)
+    {
+        ECS_ASSERT(m_Count < m_Size);
+
+        fromChunk.CopyTo(&this, m_Count, fromIndex);
+        std::get<std::vector<U>>(m_Components)[m_Count] = newComponent;
 
         return m_Count++;
     }
 
-    Index ArchetypeChunk::AddEntityRemoveComponent(ComponentType removeType, const ArchetypeChunk& chunk, Index indexInChunk)
+    template <typename... T> 
+    Index ArchetypeChunk<T...>::AddEntityRemoveComponent(const ArchetypeChunk& fromChunk, const Index fromIndex)
     {
-        ECS_ASSERT(m_Count < m_ArchetypeInfo.entitiesPerChunk);
+        ECS_ASSERT(m_Count < m_Size);
 
-        size_t offset = 0;
-        for (size_t i = 0; i < chunk.m_ArchetypeInfo.componentInfo.size(); i++)
-        {
-            const auto& comp = chunk.m_ArchetypeInfo.componentInfo[i];
-            const auto size  = comp.size;
-            if (comp.type == removeType)
-            {
-                offset--;
-            }
-            else
-            {
-                ECS_ASSERT(m_ArchetypeInfo.componentInfo[i + offset].type == comp.type);
-                std::memmove(&m_Data[m_ArchetypeInfo.componentInfo[i + offset].start + m_Count * size],
-                &chunk.m_Data[comp.start + indexInChunk * size], size);
-            }
-        }
+        CopyFrom(fromChunk, fromIndex, m_Count);
 
         return m_Count++;
-    }
-
-    Byte* ArchetypeChunk::GetComponent(const ComponentType type, const Index index)
-    {
-        ECS_ASSERT(index < m_Count);
-        Index i = m_ArchetypeInfo.GetComponentIndex(type);
-        return &m_Data[m_ArchetypeInfo.componentInfo[i].start + index * m_ArchetypeInfo.componentInfo[i].size];
     }
 
 } // namespace EVA::ECS
