@@ -5,11 +5,9 @@ cmake_minimum_required(VERSION 3.15)
 #
 
 project(
-  ${CMAKE_PROJECT_NAME}Benchmarks
+  ${CMAKE_PROJECT_NAME}_Benchmarks
   LANGUAGES CXX
 )
-
-verbose_message("Adding benchmarks under ${CMAKE_PROJECT_NAME}Benchmarks...")
 
 #
 # Set the sources for the unit tests and add the executable(s)

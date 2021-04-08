@@ -16,6 +16,6 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-
 add_subdirectory(dependencies/test)
+set(EVA_Test_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
 target_link_libraries(EVA_ECS_Test PUBLIC EVA_ECS EVA_Test)
