@@ -42,14 +42,14 @@ namespace EVA::ECS
         auto cl1 = ComponentList::Create<Position, Velocity>();
         auto cl2 = ComponentList::Create<Position, IntComp>();
 
-        for (size_t i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             Position p(i, i * 2);
             Velocity v(i * 3, i * 4);
             cq.CreateEntityFromComponents(p, v);
         }
 
-        for (size_t i = 5; i < 10; i++)
+        for (int i = 5; i < 10; i++)
         {
             Position p(i, i * 2);
             IntComp c(i * 5);
@@ -123,7 +123,7 @@ namespace EVA::ECS
 
         auto cl1 = ComponentList::Create<Position, Velocity>();
 
-        for (size_t i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++)
         {
             Position p(i, i * 2);
             Velocity v(i * 3, i * 4);

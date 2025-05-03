@@ -134,14 +134,9 @@ namespace EVA::ECS
 
         size_t Count() const { return m_Types.size(); }
 
-        const std::set<ComponentType>& GetTypes() { return m_Types; }
-        const
+        const std::set<ComponentType>& GetTypes() const { return m_Types; }
 
-        std::set<ComponentType>::iterator
-        begin()
-        {
-            return m_Types.begin();
-        }
+        std::set<ComponentType>::iterator begin() { return m_Types.begin(); }
         std::set<ComponentType>::iterator end() { return m_Types.end(); }
         std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
         std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }

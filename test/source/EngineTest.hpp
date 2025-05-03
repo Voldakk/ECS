@@ -112,7 +112,7 @@ namespace EVA::ECS
         EntityIterator<Entity, IntComp> it(engine.GetArchetypes<IntComp>());
         for (auto [e, i] : it)
         {
-            i.value = e.id + 10000;
+            i.value = (int)e.id + 10000;
         }
 
         EXPECT_EQ(engine.GetComponent<IntComp>(entities[2]).value, 2 + 10000);
@@ -239,7 +239,7 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
             for (auto [e, i] : it)
             {
-                i.value = e.id + 10000;
+                i.value = (int)e.id + 10000;
             }
         }
         {
@@ -248,7 +248,7 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
             for (auto [e, i] : it)
             {
-                ASSERT_EQ(i.value, e.id + 10000);
+                ASSERT_EQ(i.value, (int)e.id + 10000);
             }
         }
 
@@ -268,8 +268,8 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
             for (auto [e, i, p] : it)
             {
-                ASSERT_EQ(i.value, e.id + 10000);
-                p.x = e.id * 2;
+                ASSERT_EQ(i.value, (int)e.id + 10000);
+                p.x = (int)e.id * 2;
                 p.y = i.value * 3;
             }
         }
@@ -279,8 +279,8 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
             for (auto [e, i, v] : it)
             {
-                ASSERT_EQ(i.value, e.id + 10000);
-                v.x = e.id * 4;
+                ASSERT_EQ(i.value, (int)e.id + 10000);
+                v.x = (int)e.id * 4;
                 v.y = i.value * 5;
             }
         }
@@ -397,7 +397,7 @@ namespace EVA::ECS
             EntityIterator<Entity, IntComp> it(engine.GetArchetypes<IntComp>());
             for (auto [e, i] : it)
             {
-                i.value = e.id + 10000;
+                i.value = (int)e.id + 10000;
             }
         }
         {
@@ -525,10 +525,10 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
             for (auto [e, p, v] : it)
             {
-                p.x = 1 + e.id * 2;
-                p.y = 1 + e.id * 3;
-                v.x = 1 + e.id * 5;
-                v.y = 1 + e.id * 7;
+                p.x = 1 + (int)e.id * 2;
+                p.y = 1 + (int)e.id * 3;
+                v.x = 1 + (int)e.id * 5;
+                v.y = 1 + (int)e.id * 7;
             }
         }
         {

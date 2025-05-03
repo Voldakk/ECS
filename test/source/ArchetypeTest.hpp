@@ -172,15 +172,15 @@ namespace EVA::ECS
         for (size_t i = 0; i < 25; i++)
         {
             a1.CreateEntity(Entity(i));
-            a1.GetComponent<Position>(i).x = i * 10;
+            a1.GetComponent<Position>(i).x = (int)i * 10;
         }
 
         for (size_t i = 0; i < 25; i++)
         {
             size_t id = 20 + 1;
             a2.CreateEntity(Entity(id));
-            a2.GetComponent<Position>(i).x = id * 10;
-            a2.GetComponent<Velocity>(i).x = id * 100;
+            a2.GetComponent<Position>(i).x = (int)id * 10;
+            a2.GetComponent<Velocity>(i).x = (int)id * 100;
         }
 
         EXPECT_EQ(a1.EntityCount(), 25);
@@ -271,15 +271,15 @@ namespace EVA::ECS
         for (size_t i = 0; i < 25; i++)
         {
             a1.CreateEntity(Entity(i));
-            a1.GetComponent<Position>(i).x = i * 10;
+            a1.GetComponent<Position>(i).x = (int)i * 10;
         }
 
         for (size_t i = 0; i < 25; i++)
         {
             size_t id = 20 + 1;
             a2.CreateEntity(Entity(id));
-            a2.GetComponent<Position>(i).x = id * 10;
-            a2.GetComponent<Velocity>(i).x = id * 100;
+            a2.GetComponent<Position>(i).x = (int)id * 10;
+            a2.GetComponent<Velocity>(i).x = (int)id * 100;
         }
 
         EXPECT_EQ(a1.EntityCount(), 25);
@@ -380,7 +380,7 @@ namespace EVA::ECS
 
         for (auto [entity, position] : it)
         {
-            position.x = entity.id * 10;
+            position.x = (int)entity.id * 10;
         }
 
         for (Index i = 0; i < 20; i++)

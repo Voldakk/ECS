@@ -187,7 +187,7 @@ namespace EVA::ECS
         for (size_t i = 0; i < 10; i++)
         {
             ac1.CreateEntity(Entity(i));
-            ac1.GetComponent<Position>(i).x = i * 10;
+            ac1.GetComponent<Position>(i).x = (int)i * 10;
         }
 
         ComponentList cl2({ Position::GetType(), Velocity::GetType(), StructComponentA::GetType() });
@@ -198,8 +198,8 @@ namespace EVA::ECS
         {
             size_t id = 10 + i;
             ac2.CreateEntity(Entity(id));
-            ac2.GetComponent<Position>(i).x = id * 10;
-            ac2.GetComponent<Velocity>(i).x = id * 100;
+            ac2.GetComponent<Position>(i).x = (int)id * 10;
+            ac2.GetComponent<Velocity>(i).x = (int)id * 100;
         }
 
         EXPECT_EQ(ac1.Count(), 10);
@@ -237,7 +237,7 @@ namespace EVA::ECS
         for (size_t i = 0; i < 10; i++)
         {
             ac1.CreateEntity(Entity(i));
-            ac1.GetComponent<Position>(i).x = i * 10;
+            ac1.GetComponent<Position>(i).x = (int)i * 10;
         }
 
         ComponentList cl2({ Position::GetType(), Velocity::GetType(), StructComponentA::GetType() });
@@ -248,8 +248,8 @@ namespace EVA::ECS
         {
             size_t id = 10 + 1;
             ac2.CreateEntity(Entity(id));
-            ac2.GetComponent<Position>(i).x = id * 10;
-            ac2.GetComponent<Velocity>(i).x = id * 100;
+            ac2.GetComponent<Position>(i).x = (int)id * 10;
+            ac2.GetComponent<Velocity>(i).x = (int)id * 100;
         }
 
         EXPECT_EQ(ac1.Count(), 10);

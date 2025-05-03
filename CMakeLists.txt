@@ -25,12 +25,12 @@ target_include_directories(EVA_ECS
 	PUBLIC "include"
 )
 
-option(${PROJECT_NAME}_ENABLE_TESTS "Enable tests" ON)
+option(${PROJECT_NAME}_ENABLE_TESTS "Enable tests" OFF)
 if(${PROJECT_NAME}_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
-option(${PROJECT_NAME}_ENABLE_BENCHMARKS "Enable benchmarks" ON)
+option(${PROJECT_NAME}_ENABLE_BENCHMARKS "Enable benchmarks" OFF)
 if(${PROJECT_NAME}_ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif()
