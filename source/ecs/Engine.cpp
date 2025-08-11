@@ -74,6 +74,25 @@ namespace EVA::ECS
         return archetypes;
     }
 
+    std::vector<Archetype*> Engine::GetArchetypes(const ComponentFilter& filter, bool allowEmpty)
+    {
+        std::vector<Archetype*> archetypes;
+        for (auto [key, value] : m_ArchetypeMap)
+        {
+            if (!allowEmpty && m_Archetypes[value].EntityCount() == 0)
+                continue;
+
+            if (!key.Contains(filter.GetCompulsory()))
+                continue;
+
+            if (filter.GetExcluded().ContainsAny(key))
+                continue;
+
+            archetypes.push_back(&m_Archetypes[value]);
+        }
+        return archetypes;
+    }
+
     void Engine::AddComponent(Entity& entity, ComponentType type) { AddComponent(entity, type, ComponentMap::DefaultData(type)); }
 
     void Engine::AddComponent(Entity& entity, ComponentType type, const Byte* data)

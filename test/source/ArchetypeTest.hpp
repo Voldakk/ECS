@@ -389,4 +389,72 @@ namespace EVA::ECS
             EXPECT_EQ(a2.GetComponent<Position>(i).x, a2.GetComponent<Entity>(i).id * 10);
         }
     }
+
+    TEST(Archetype, EntityIteratorOptional)
+    {
+        ComponentList cl1 = ComponentList::Create<Position, StructComponentA>();
+        size_t chunkSize1 = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(StructComponentA));
+        Archetype a1(cl1, chunkSize1);
+
+        ComponentList cl2 = ComponentList::Create<Position, Velocity>();
+        size_t chunkSize2 = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(Velocity));
+        Archetype a2(cl2, chunkSize2);
+
+        for (size_t i = 0; i < 20; i++)
+        {
+            a1.CreateEntity(Entity(i));
+            a2.CreateEntity(Entity(20 + i));
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 20);
+        EXPECT_EQ(a2.EntityCount(), 20);
+
+        {
+            EntityIterator<Entity, Position> it({ &a1, &a2 });
+
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.Count(), 40);
+
+            for (auto [entity, position] : it)
+            {
+                position.x = (int)entity.id * 10;
+            }
+        }
+
+        {
+            EntityIterator<Entity, Velocity> it({ &a2 });
+
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.Count(), 20);
+
+            for (auto [entity, velocity] : it)
+            {
+                velocity.x = 100;
+                velocity.y = 0;
+            }
+        }
+
+        {
+            EntityIterator<Entity, Position, std::optional<Velocity>> it({ &a1, &a2 });
+
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.Count(), 40);
+
+            for (auto [entity, position, velocity] : it)
+            {
+                if (velocity.has_value())
+                {
+                    position.x    = velocity.value().x;
+                    (*velocity).y = (int)entity.id;
+                }
+            }
+
+            for (Index i = 0; i < 20; i++)
+            {
+                EXPECT_EQ(a1.GetComponent<Position>(i).x, a1.GetComponent<Entity>(i).id * 10);
+                EXPECT_EQ(a2.GetComponent<Position>(i).x, 100);
+                EXPECT_EQ(a2.GetComponent<Velocity>(i).y, a2.GetComponent<Entity>(i).id);
+            }
+        }
+    }
 } // namespace EVA::ECS

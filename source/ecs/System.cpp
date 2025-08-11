@@ -4,5 +4,5 @@
 namespace EVA::ECS
 {
     Engine& System::GetEngine() { return *m_Engine; }
-    ArchetypeContainer System::GetArchetypes(const ComponentList& components) { return m_Engine->GetArchetypes(components, false); }
+    std::vector<Archetype*> System::GetArchetypes(const ComponentFilter& filter) { return m_Engine->GetArchetypes(filter, false); }
 } // namespace EVA::ECS

@@ -1,12 +1,16 @@
 #pragma once
 
 #include "Core.hpp"
+#include "OptionalRef.hpp"
 
 #include <algorithm>
 #include <cstring>
 #include <map>
 #include <memory>
+#include <optional>
+#include <ostream>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 #define EVA_ECS_REGISTER_COMPONENT(TYPE)                                                                                                   \
@@ -37,6 +41,9 @@ namespace EVA::ECS
       private:
         ValueType m_Value{ 0 };
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const ComponentType& ct) { return os << ct.Get(); }
+
     inline bool operator==(const ComponentType& lhs, const ComponentType& rhs) { return lhs.Get() == rhs.Get(); }
     inline bool operator!=(const ComponentType& lhs, const ComponentType& rhs) { return !operator==(lhs, rhs); }
     inline bool operator<(const ComponentType& lhs, const ComponentType& rhs) { return lhs.Get() < rhs.Get(); }
@@ -132,6 +139,16 @@ namespace EVA::ECS
 
         bool Contains(const ComponentType& type) const { return std::find(m_Types.begin(), m_Types.end(), type) != m_Types.end(); }
 
+        bool ContainsAny(const ComponentList& list) const
+        {
+            for (const auto comp : list)
+            {
+                if (Contains(comp))
+                    return true;
+            }
+            return false;
+        }
+
         size_t Count() const { return m_Types.size(); }
 
         const std::set<ComponentType>& GetTypes() const { return m_Types; }
@@ -140,20 +157,177 @@ namespace EVA::ECS
         std::set<ComponentType>::iterator end() { return m_Types.end(); }
         std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
         std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }
+    };
 
-        struct Hash
+    // is_std_optional_v
+    template <typename T> struct is_std_optional : std::false_type
+    {
+    };
+
+    template <typename T> struct is_std_optional<std::optional<T>> : std::true_type
+    {
+    };
+
+    template <typename T> inline constexpr bool is_std_optional_v = is_std_optional<T>::value;
+
+    // optional_inner_type_t
+    template <typename T> struct optional_inner_type
+    {
+        using type = T;
+    };
+
+    template <typename U> struct optional_inner_type<std::optional<U>>
+    {
+        using type = U;
+    };
+
+    template <typename T> using optional_inner_type_t = typename optional_inner_type<T>::type;
+
+    // Not
+    template <typename T> struct Not
+    {
+        using type = T;
+    };
+
+    template <typename T> struct is_not : std::false_type
+    {
+    };
+
+    template <typename T> struct is_not<Not<T>> : std::true_type
+    {
+    };
+
+    template <typename T> inline constexpr bool is_not_v = is_not<T>::value;
+
+    template <template <typename> typename Pred, typename... Ts>
+    using filter_tuple_t = decltype(std::tuple_cat(std::conditional_t<Pred<Ts>::value, std::tuple<>, std::tuple<Ts>>{}...));
+
+    template <typename... Ts> using remove_nots_t = filter_tuple_t<is_not, Ts...>;
+
+    // Optional ref
+    template <typename T> struct optional_ref_transform
+    {
+        using type = T&;
+    };
+
+    template <typename U> struct optional_ref_transform<std::optional<U>>
+    {
+        using type = OptionalRef<U>;
+    };
+
+    template <typename T> using optional_ref_transform_t = typename optional_ref_transform<T>::type;
+
+    class ComponentFilter
+    {
+        ComponentList compulsory;
+        ComponentList optional;
+        ComponentList excluded;
+
+      public:
+        ComponentFilter() = default;
+        ComponentFilter(const std::initializer_list<ComponentType>& types) : compulsory(types) {}
+        explicit ComponentFilter(std::set<ComponentType>& types) : compulsory(ComponentList(types)) {}
+
+        template <typename... T> static inline ComponentFilter Create()
         {
-          public:
-            std::size_t operator()(const ComponentList& list) const
+            ComponentFilter filter;
+            (filter.Add<T>(), ...);
+            return filter;
+        }
+
+        ComponentFilter& AddCompulsory(ComponentType type)
+        {
+            compulsory.Add(type);
+            return *this;
+        }
+
+        ComponentFilter& AddOptional(ComponentType type)
+        {
+            optional.Add(type);
+            return *this;
+        }
+
+        ComponentFilter& AddExcluded(ComponentType type)
+        {
+            excluded.Add(type);
+            return *this;
+        }
+
+        template <typename T> ComponentFilter& Add()
+        {
+            if constexpr (is_std_optional_v<T>)
             {
-                size_t value = 0;
-                for (const auto& type : list)
-                {
-                    value = value * 3 + std::hash<ComponentType::ValueType>()(type.Get());
-                }
-                return value;
+                return AddOptional(T::value_type::GetType());
             }
-        };
+            else if constexpr (is_not_v<T>)
+            {
+                return AddExcluded(T::type::GetType());
+            }
+            else
+            {
+                return AddCompulsory(T::GetType());
+            }
+        }
+
+        ComponentFilter& RemoveCompulsory(ComponentType type)
+        {
+            compulsory.Remove(type);
+            return *this;
+        }
+
+        ComponentFilter& RemoveOptional(ComponentType type)
+        {
+            optional.Remove(type);
+            return *this;
+        }
+
+        ComponentFilter& RemoveExcluded(ComponentType type)
+        {
+            excluded.Remove(type);
+            return *this;
+        }
+
+        template <typename T> ComponentFilter& Remove()
+        {
+            if constexpr (is_std_optional_v<T>)
+            {
+                return RemoveOptional(T::value_type::GetType());
+            }
+            else if constexpr (is_not_v<T>)
+            {
+                return RemoveNot(T::type::GetType());
+            }
+            else
+            {
+                return RemoveCompulsory(T::GetType());
+            }
+        }
+
+        bool operator==(const ComponentFilter& other) const
+        {
+            return compulsory == other.compulsory && optional == other.optional && excluded == other.excluded;
+        }
+        bool operator!=(const ComponentFilter& other) const { return !(*this == other); }
+
+        bool Contains(const ComponentList& list) const
+        {
+            for (const auto& comp : excluded)
+            {
+                if (list.Contains(comp))
+                {
+                    return false;
+                }
+            }
+            return compulsory.Contains(list);
+        }
+
+        bool Contains(const ComponentType& type) const { return compulsory.Contains(type); }
+
+        size_t Count() const { return compulsory.Count(); }
+
+        const ComponentList& GetCompulsory() const { return compulsory; }
+        const ComponentList& GetOptional() const { return optional; }
+        const ComponentList& GetExcluded() const { return excluded; }
     };
 
     struct Entity
@@ -181,3 +355,37 @@ namespace EVA::ECS
         }
     };
 } // namespace EVA::ECS
+
+namespace std
+{
+    template <> struct hash<EVA::ECS::ComponentList>
+    {
+      public:
+        std::size_t operator()(const EVA::ECS::ComponentList& list) const
+        {
+            size_t value = 0;
+            for (const auto& type : list.GetTypes())
+            {
+                std::size_t h = std::hash<size_t>{}(type.Get());
+                value ^= h + 0x9e3779b9 + (value << 6) + (value >> 2);
+            }
+            return value;
+        }
+    };
+
+    template <> struct hash<EVA::ECS::ComponentFilter>
+    {
+      public:
+        std::size_t operator()(const EVA::ECS::ComponentFilter& filter) const
+        {
+            std::size_t h1 = std::hash<EVA::ECS::ComponentList>{}(filter.GetCompulsory());
+            std::size_t h2 = std::hash<EVA::ECS::ComponentList>{}(filter.GetOptional());
+            std::size_t h3 = std::hash<EVA::ECS::ComponentList>{}(filter.GetExcluded());
+
+            std::size_t value = h1;
+            value ^= h2 + 0x9e3779b9 + (value << 6) + (value >> 2);
+            value ^= h3 + 0x9e3779b9 + (value << 6) + (value >> 2);
+            return value;
+        }
+    };
+} // namespace std

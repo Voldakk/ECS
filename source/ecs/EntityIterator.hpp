@@ -8,18 +8,16 @@
 
 namespace EVA::ECS
 {
-    using ArchetypeContainer = std::vector<Archetype*>;
-    using ArchetypeIterator  = ArchetypeContainer::iterator;
+    using ArchetypeIterator = std::vector<Archetype*>::iterator;
 
     template <typename... T> class EntityIterator
     {
+        std::vector<Archetype*> m_Archetypes;
+
       public:
         class Iterator;
 
-        explicit EntityIterator(const ArchetypeContainer& archetypes)
-        : m_Components(ComponentList::Create<T...>()), m_Archetypes(archetypes)
-        {
-        }
+        explicit EntityIterator(const std::vector<Archetype*>& archetypes) : m_Archetypes(archetypes) {}
 
         Index Count() const
         {
@@ -56,15 +54,10 @@ namespace EVA::ECS
 
         Iterator end() { return Iterator(m_Archetypes.end()); }
 
-      private:
-        ComponentList m_Components;
-        ArchetypeContainer m_Archetypes;
-
-      public:
         class Iterator
         {
           public:
-            using value_type        = std::tuple<T&...>;
+            using value_type        = std::tuple<optional_ref_transform_t<T>...>;
             using pointer           = value_type*;
             using reference         = value_type&;
             using difference_type   = Index;

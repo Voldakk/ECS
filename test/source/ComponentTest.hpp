@@ -110,6 +110,41 @@ namespace EVA::ECS
         EXPECT_FALSE(l_01234.Contains(l_25));
     }
 
+    TEST(ComponentList, ContainsAny)
+    {
+        ComponentList l;
+
+        ComponentList l_0123;
+        l_0123.Add<Comp0>().Add<Comp1>().Add<Comp2>().Add<Comp3>();
+
+        ComponentList l_01234;
+        l_01234.Add<Comp0>().Add<Comp1>().Add<Comp2>().Add<Comp3>().Add<Comp4>();
+
+        ComponentList l_23;
+        l_23.Add<Comp2>().Add<Comp3>();
+
+        ComponentList l_24;
+        l_24.Add<Comp2>().Add<Comp4>();
+
+        ComponentList l_2;
+        l_2.Add<Comp2>();
+
+        ComponentList l_5;
+        l_5.Add<Comp5>();
+
+        EXPECT_FALSE(l_0123.ContainsAny(l));
+        EXPECT_FALSE(l_01234.ContainsAny(l));
+
+        EXPECT_TRUE(l_0123.ContainsAny(l_23));
+        EXPECT_TRUE(l_01234.ContainsAny(l_23));
+
+        EXPECT_TRUE(l_0123.ContainsAny(l_24));
+        EXPECT_TRUE(l_01234.ContainsAny(l_24));
+
+        EXPECT_TRUE(l_0123.ContainsAny(l_2));
+        EXPECT_FALSE(l_01234.ContainsAny(l_5));
+    }
+
     TEST(ComponentList, ComponentListHash)
     {
         ComponentList l_23;
@@ -119,7 +154,7 @@ namespace EVA::ECS
         ComponentList l_25;
         l_25.Add<Comp2>().Add<Comp5>();
 
-        ComponentList::Hash h;
+        std::hash<ComponentList> h;
         auto h_23 = h(l_23);
         auto h_24 = h(l_24);
         auto h_25 = h(l_25);
@@ -128,7 +163,7 @@ namespace EVA::ECS
         EXPECT_NE(h_23, h_25);
         EXPECT_NE(h_24, h_25);
 
-        std::unordered_map<ComponentList, int, ComponentList::Hash> map;
+        std::unordered_map<ComponentList, int> map;
 
         map[l_23] = 23;
         map[l_24] = 24;
@@ -137,5 +172,26 @@ namespace EVA::ECS
         EXPECT_EQ(map[l_23], 23);
         EXPECT_EQ(map[l_24], 24);
         EXPECT_EQ(map[l_25], 25);
+    }
+
+    TEST(ComponentFilter, Add)
+    {
+        ComponentFilter f;
+        f.Add<Comp1>().Add<Comp2>();
+        f.Add<std::optional<Comp3>>().Add<std::optional<Comp4>>();
+        f.Add<Not<Comp5>>();
+
+        EXPECT_EQ(f.GetCompulsory().GetTypes(), (std::set{Comp1::GetType(), Comp2::GetType()}));
+        EXPECT_EQ(f.GetOptional().GetTypes(), (std::set{Comp3::GetType(), Comp4::GetType()}));
+        EXPECT_EQ(f.GetExcluded().GetTypes(), (std::set{Comp5::GetType()}));
+    }
+
+    TEST(ComponentFilter, Create)
+    {
+        auto f = ComponentFilter::Create<Comp1, Comp2, std::optional<Comp3>, std::optional<Comp4>, Not<Comp5>>();
+
+        EXPECT_EQ(f.GetCompulsory().GetTypes(), (std::set{Comp1::GetType(), Comp2::GetType()}));
+        EXPECT_EQ(f.GetOptional().GetTypes(), (std::set{Comp3::GetType(), Comp4::GetType()}));
+        EXPECT_EQ(f.GetExcluded().GetTypes(), (std::set{Comp5::GetType()}));
     }
 } // namespace EVA::ECS

@@ -15,7 +15,7 @@ namespace EVA::ECS
     class Engine
     {
       public:
-        using ArchetypeMap = std::unordered_map<ComponentList, Index, ComponentList::Hash>;
+        using ArchetypeMap = std::unordered_map<ComponentList, Index>;
 
         Engine();
 
@@ -31,7 +31,11 @@ namespace EVA::ECS
         Archetype& GetArchetype(Index index);
 
         template <typename... T> std::vector<Archetype*> GetArchetypes(bool allowEmpty = false);
+
         std::vector<Archetype*> GetArchetypes(const ComponentList& components, bool allowEmpty = false);
+        std::vector<Archetype*> GetArchetypes(const ComponentFilter& filter, bool allowEmpty = false);
+
+        template <typename... T> inline EntityIterator<Entity, T...> GetEntityIterator();
 
         Index EntityCount() const { return m_EntityCount; }
         Index ArchetypeCount() { return m_Archetypes.size(); }
@@ -70,6 +74,11 @@ namespace EVA::ECS
         std::pair<Index, Archetype&> GetOrCreateArchetype(const ComponentList& components);
     };
 
+    template <typename... T> inline EntityIterator<Entity, T...> Engine::GetEntityIterator()
+    {
+        return EntityIterator<Entity, T...>(GetArchetypes(ComponentList::Create<T...>(), false));
+    }
+
     template <typename... T> inline Entity Engine::CreateEntityFromComponents(const T&... components)
     {
         auto data = CombineBytes(components...);
@@ -78,7 +87,7 @@ namespace EVA::ECS
 
     template <typename... T> inline std::vector<Archetype*> Engine::GetArchetypes(bool allowEmpty)
     {
-        return GetArchetypes(ComponentList::Create<T...>(), allowEmpty);
+        return GetArchetypes(ComponentFilter::Create<T...>(), allowEmpty);
     }
 
     template <typename T> inline void Engine::AddComponent(Entity& entity) { AddComponent(entity, T::GetType()); }

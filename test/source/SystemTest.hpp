@@ -77,4 +77,67 @@ namespace EVA::ECS
             EXPECT_EQ(p.y, (int)e.id * -10 * 100);
         }
     }
+
+    TEST(System, LinearGravitySystem)
+    {
+        class LinearGravitySystem : public System
+        {
+          public:
+            virtual void Update() override
+            {
+                for (auto [ent, pos, vel] : GetEntityIterator<Position, std::optional<Velocity>>())
+                {
+                    pos.y -= 1;
+
+                    if (vel)
+                    {
+                        pos.x += vel->x;
+                        pos.y += vel->y;
+                    }
+                }
+            }
+        };
+
+        Engine engine;
+        for (size_t i = 0; i < 10; i++)
+        {
+            engine.CreateEntity(ComponentList::Create<Position, Velocity>());
+        }
+        for (size_t i = 0; i < 10; i++)
+        {
+            engine.CreateEntity(ComponentList::Create<Position>());
+        }
+
+        for (auto [e, p] : EntityIterator<Entity, Position>(engine.GetArchetypes<Position>()))
+        {
+            p.x = 0;
+            p.y = 0;
+        }
+
+        for (auto [e, v] : EntityIterator<Entity, Velocity>(engine.GetArchetypes<Velocity>()))
+        {
+            v.x = (int)e.id;
+            v.y = (int)e.id;
+        }
+
+
+        engine.AddSystem<LinearGravitySystem>();
+
+        for (size_t i = 0; i < 100; i++)
+        {
+            engine.UpdateSystems();
+        }
+
+        for (auto [e, p] : EntityIterator<Entity, Position>(engine.GetArchetypes<Position, Not<Velocity>>()))
+        {
+            EXPECT_EQ(p.x, 0);
+            EXPECT_EQ(p.y, -100);
+        }
+
+        for (auto [e, p] : EntityIterator<Entity, Position>(engine.GetArchetypes<Position, Velocity>()))
+        {
+            EXPECT_EQ(p.x, (int)e.id * 100);
+            EXPECT_EQ(p.y, -100 + (int)e.id * 100);
+        }
+    }
 } // namespace EVA::ECS

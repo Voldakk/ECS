@@ -182,6 +182,87 @@ namespace EVA::ECS
             EXPECT_EQ(it.ArchetypeCount(), 1);
         }
     }
+
+    TEST(Engine, GetArchetypesOptionalComp)
+    {
+        Engine engine;
+
+        ComponentList cl[3] = { ComponentList::Create<Position>(), ComponentList::Create<Velocity>(), ComponentList::Create<Position, Velocity>() };
+        size_t count[3]  = { 200, 300, 400 };
+        auto countPos    = count[0] + count[2];
+        auto countVel    = count[1] + count[2];
+        auto countPosVel = count[2];
+        auto countTotal  = count[0] + count[1] + count[2];
+        std::vector<Entity> entities;
+        for (size_t i = 0; i < 3; i++)
+        {
+            for (size_t n = 0; n < count[i]; n++)
+                entities.push_back(engine.CreateEntity(cl[i]));
+        }
+
+        EXPECT_EQ(engine.ArchetypeCount(), 3);
+        EXPECT_EQ(engine.EntityCount(), countTotal);
+
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Position, std::optional<Velocity>>(), false));
+            EXPECT_EQ(it.Count(), countPos);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 2);
+        }
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Velocity, std::optional<Position>>(), false));
+            EXPECT_EQ(it.Count(), countVel);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 2);
+        }
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Position, Velocity>(), false));
+            EXPECT_EQ(it.Count(), countPosVel);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 1);
+        }
+    }
+
+    TEST(Engine, GetArchetypesNotComp)
+    {
+        Engine engine;
+
+        ComponentList cl[3] = { ComponentList::Create<Position>(), ComponentList::Create<Velocity>(), ComponentList::Create<Position, Velocity>() };
+        size_t count[3]  = { 200, 300, 400 };
+        auto countJustPos    = count[0];
+        auto countJustVel    = count[1];
+        auto countPosVel = count[2];
+        auto countTotal  = count[0] + count[1] + count[2];
+        std::vector<Entity> entities;
+        for (size_t i = 0; i < 3; i++)
+        {
+            for (size_t n = 0; n < count[i]; n++)
+                entities.push_back(engine.CreateEntity(cl[i]));
+        }
+
+        EXPECT_EQ(engine.ArchetypeCount(), 3);
+        EXPECT_EQ(engine.EntityCount(), countTotal);
+
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Position, Not<Velocity>>(), false));
+            EXPECT_EQ(it.Count(), countJustPos);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 1);
+        }
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Velocity, Not<Position>>(), false));
+            EXPECT_EQ(it.Count(), countJustVel);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 1);
+        }
+        {
+            EntityIterator<Entity> it(engine.GetArchetypes(ComponentFilter::Create<Position, Velocity>(), false));
+            EXPECT_EQ(it.Count(), countPosVel);
+            EXPECT_FALSE(it.Empty());
+            EXPECT_EQ(it.ArchetypeCount(), 1);
+        }
+    }
+
     TEST(Engine, AddComponentSimple)
     {
         Engine engine;

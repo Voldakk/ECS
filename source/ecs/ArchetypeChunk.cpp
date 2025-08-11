@@ -33,10 +33,12 @@ namespace EVA::ECS
         }
     }
 
-    Index ArchetypeInfo::GetComponentIndex(const ComponentType type) const
+    std::optional<Index> ArchetypeInfo::GetComponentIndex(const ComponentType type) const
     {
-        auto it = std::find_if(componentInfo.begin(), componentInfo.end(), ComponentInfo::Predicate(type));
-        ECS_ASSERT(it != componentInfo.end());
+        const auto it = std::find_if(componentInfo.begin(), componentInfo.end(), ComponentInfo::Predicate(type));
+        if (it == componentInfo.end())
+            return std::nullopt;
+
         return static_cast<Index>(std::distance(componentInfo.begin(), it));
     }
 
@@ -166,8 +168,9 @@ namespace EVA::ECS
     Byte* ArchetypeChunk::GetComponent(const ComponentType type, const Index index)
     {
         ECS_ASSERT(index < m_Count);
-        Index i = m_ArchetypeInfo.GetComponentIndex(type);
-        return &m_Data[m_ArchetypeInfo.componentInfo[i].start + index * m_ArchetypeInfo.componentInfo[i].size];
+        const auto i = m_ArchetypeInfo.GetComponentIndex(type);
+        ECS_ASSERT(i.has_value());
+        return &m_Data[m_ArchetypeInfo.componentInfo[i.value()].start + index * m_ArchetypeInfo.componentInfo[i.value()].size];
     }
 
 } // namespace EVA::ECS
