@@ -20,7 +20,7 @@
     friend class StaticConstructor;                                                                                                        \
     struct StaticConstructor                                                                                                               \
     {                                                                                                                                      \
-        StaticConstructor() { TYPE::s_Type = EVA::ECS::ComponentMap::Add<TYPE>(); }                                                        \
+        StaticConstructor() { TYPE::s_Type = EVA::ECS::ComponentMap::Add<TYPE>(#TYPE); }                                                   \
     };                                                                                                                                     \
     inline static StaticConstructor cons;                                                                                                  \
                                                                                                                                            \
@@ -56,6 +56,8 @@ namespace EVA::ECS
       public:
         struct ComponentInfo
         {
+            const char* name;
+            size_t id{ 0 };
             size_t size{ 0 };
             std::unique_ptr<std::vector<Byte>> defaultData = nullptr;
         };
@@ -70,7 +72,7 @@ namespace EVA::ECS
 
         inline static Byte* DefaultData(ComponentType type) { return s_Info[type.Get()].defaultData->data(); }
 
-        template <typename T> inline static ComponentType Add()
+        template <typename T> inline static ComponentType Add(const char* name)
         {
             ComponentType type = ComponentType(s_IdCounter++);
 
@@ -78,7 +80,8 @@ namespace EVA::ECS
             {
                 s_Info.resize(type.Get() + 1);
             }
-
+            s_Info[type.Get()].name        = name;
+            s_Info[type.Get()].id          = type.Get();
             s_Info[type.Get()].size        = sizeof(T);
             s_Info[type.Get()].defaultData = std::make_unique<std::vector<EVA::ECS::Byte>>(sizeof(T));
 

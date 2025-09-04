@@ -129,7 +129,7 @@ namespace EVA::ECS
         Position p         = Position(123, 456);
         Velocity v         = Velocity(321, 654);
         StructComponentA s = StructComponentA(11, 22, 33, 22, true, false);
-        auto data          = CombineBytes(p, v, s);
+        auto data          = CombineBytesById(p, v, s);
 
         Entity e1 = engine.CreateEntity(cl, &data[0]);
         Entity e2 = engine.CreateEntityFromComponents(p, v, s);

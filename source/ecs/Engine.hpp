@@ -81,7 +81,7 @@ namespace EVA::ECS
 
     template <typename... T> inline Entity Engine::CreateEntityFromComponents(const T&... components)
     {
-        auto data = CombineBytes(components...);
+        auto data = CombineBytesById(components...);
         return CreateEntity(ComponentList::Create<T...>(), &data[0]);
     }
 

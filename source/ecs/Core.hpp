@@ -5,6 +5,8 @@
 #include <cstring>
 #include <functional>
 #include <vector>
+#include <array>
+#include <algorithm>
 
 #ifdef ECS_DEBUG
 #ifdef ECS_PLATFORM_WINDOWS
@@ -65,6 +67,29 @@ namespace EVA::ECS
         std::vector<Byte> data(SizeOf<T...>);
         Index index = 0;
         CopyInto(data, index, items...);
+        return data;
+    }
+
+    template <typename... T> std::vector<Byte> CombineBytesById(const T&... items)
+    {
+        struct ItemEntry
+        {
+            const void* ptr;
+            size_t size;
+            size_t type_id;
+        };
+
+        auto entries = std::array<ItemEntry, sizeof...(T)>{ ItemEntry{ &items, sizeof(T), T::GetType().Get() }... };
+        std::sort(entries.begin(), entries.end(), [](auto const& a, auto const& b) { return a.type_id < b.type_id; });
+
+        std::vector<Byte> data(SizeOf<T...>);
+        size_t offset = 0;
+        for (auto const& e : entries)
+        {
+            std::memcpy(data.data() + offset, e.ptr, e.size);
+            offset += e.size;
+        }
+
         return data;
     }
 } // namespace EVA::ECS

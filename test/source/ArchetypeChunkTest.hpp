@@ -142,7 +142,7 @@ namespace EVA::ECS
         Velocity v = Velocity(321, 654);
         IntComp i  = IntComp(9);
 
-        auto data = CombineBytes(p, v, i);
+        auto data = CombineBytesById(p, v, i);
         ac.CreateEntity(e, &data[0]);
 
         EXPECT_EQ(ac.GetEntity(0).id, 111);
