@@ -361,6 +361,15 @@ namespace EVA::ECS
 
 namespace std
 {
+    template <> struct hash<EVA::ECS::Entity>
+    {
+      public:
+        std::size_t operator()(const EVA::ECS::Entity& e) const
+        {
+            return e.id;
+        }
+    };
+
     template <> struct hash<EVA::ECS::ComponentList>
     {
       public:

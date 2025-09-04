@@ -39,6 +39,14 @@ namespace EVA::ECS
             return *FromBytes<T>(GetComponent(T::GetType(), chunk, indexInChunk));
         }
 
+        template <typename T> inline OptionalRef<T> TryGetComponent(const Index chunk, const Index indexInChunk)
+        {
+            const auto i = m_ArchetypeInfo.GetComponentIndex(T::GetType());
+            if (!i.has_value())
+                return std::nullopt;
+            return *FromBytes<T>(GetComponent(T::GetType(), chunk, indexInChunk));
+        }
+
         Byte* GetComponent(const ComponentType type, const Index index);
         Byte* GetComponent(const Index archetypeComponentIndex, const Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *FromBytes<T>(GetComponent(T::GetType(), index)); }
@@ -82,7 +90,10 @@ namespace EVA::ECS
             {
             }
 
-            Iterator(ChunkVector::iterator chunksEnd, std::optional<Index> index) : m_Index(index), m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd) {}
+            Iterator(ChunkVector::iterator chunksEnd, std::optional<Index> index)
+            : m_Index(index), m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd)
+            {
+            }
 
             Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, std::optional<Index> index)
             : m_Index(index), m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_CompIt((*m_ChunksIt)->begin<T>(m_Index)),
