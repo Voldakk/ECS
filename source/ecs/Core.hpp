@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PlatformDetection.hpp"
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstring>
 #include <functional>
 #include <vector>
-#include <array>
-#include <algorithm>
 
 #ifdef ECS_DEBUG
 #ifdef ECS_PLATFORM_WINDOWS
@@ -91,5 +91,24 @@ namespace EVA::ECS
         }
 
         return data;
+    }
+
+    template <typename... T> void CombineBytesById(std::vector<Byte>& buffer, size_t& cursor, const T&... items)
+    {
+        struct ItemEntry
+        {
+            const void* ptr;
+            size_t size;
+            size_t type_id;
+        };
+
+        auto entries = std::array<ItemEntry, sizeof...(T)>{ ItemEntry{ &items, sizeof(T), T::GetType().Get() }... };
+        std::sort(entries.begin(), entries.end(), [](auto const& a, auto const& b) { return a.type_id < b.type_id; });
+
+        for (auto const& e : entries)
+        {
+            std::memcpy(buffer.data() + cursor, e.ptr, e.size);
+            cursor += e.size;
+        }
     }
 } // namespace EVA::ECS

@@ -54,7 +54,6 @@ namespace EVA::ECS
         {
             m_Data.resize(m_Data.size() * 2);
         }
-
-        CopyInto(m_Data, m_DataIndex, items...);
+        CombineBytesById(m_Data, m_DataIndex, items...);
     }
 } // namespace EVA::ECS
