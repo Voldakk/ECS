@@ -135,7 +135,7 @@ namespace EVA::ECS
         m_EntityLocations[entity.index] = EntityLocation(newArchetypeIndex, newChunk, newPosition, entity.id);
     }
 
-    Byte* Engine::GetComponent(Entity& entity, const ComponentType type)
+    Byte* Engine::GetComponent(const Entity& entity, const ComponentType type)
     {
         const auto& loc = m_EntityLocations[entity.index];
         ECS_ASSERT(entity.id == loc.entityId);

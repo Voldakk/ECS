@@ -49,9 +49,9 @@ namespace EVA::ECS
         template <typename T> void RemoveComponent(Entity& entity);
         void RemoveComponent(Entity& entity, const ComponentType type);
 
-        template <typename T> T& GetComponent(Entity& entity);
-        template <typename T> OptionalRef<T> TryGetComponent(Entity& entity);
-        Byte* GetComponent(Entity& entity, const ComponentType type);
+        template <typename T> T& GetComponent(const Entity& entity);
+        template <typename T> OptionalRef<T> TryGetComponent(const Entity& entity);
+        Byte* GetComponent(const Entity& entity, const ComponentType type);
 
         template <typename T> T* AddSystem();
 
@@ -100,14 +100,14 @@ namespace EVA::ECS
 
     template <typename T> inline void Engine::RemoveComponent(Entity& entity) { RemoveComponent(entity, T::GetType()); }
 
-    template <typename T> inline T& Engine::GetComponent(Entity& entity)
+    template <typename T> inline T& Engine::GetComponent(const Entity& entity)
     {
         const auto& loc = m_EntityLocations[entity.index];
         ECS_ASSERT(entity.id == loc.entityId);
         return GetArchetype(loc.archetype).GetComponent<T>(loc.chunk, loc.position);
     }
 
-    template <typename T> inline OptionalRef<T> Engine::TryGetComponent(Entity& entity)
+    template <typename T> inline OptionalRef<T> Engine::TryGetComponent(const Entity& entity)
     {
         const auto& loc = m_EntityLocations[entity.index];
         ECS_ASSERT(entity.id == loc.entityId);
