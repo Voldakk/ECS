@@ -189,14 +189,14 @@ namespace EVA::ECS
 
             Iterator(Index index, const std::vector<ChunkInfo>& chunks) : m_Index(index), m_Chunks(chunks) { UpdateCI(); }
 
-            bool operator==(const Iterator& other) const { return m_Index == other.m_Index; }
-            bool operator!=(const Iterator& other) const { return m_Index != other.m_Index; }
-            bool operator<(const Iterator& other) const { return m_Index < other.m_Index; }
-            bool operator>(const Iterator& other) const { return m_Index > other.m_Index; }
-            bool operator<=(const Iterator& other) const { return m_Index <= other.m_Index; }
-            bool operator>=(const Iterator& other) const { return m_Index >= other.m_Index; }
+            inline bool operator==(const Iterator& other) const { return m_Index == other.m_Index; }
+            inline bool operator!=(const Iterator& other) const { return m_Index != other.m_Index; }
+            inline bool operator<(const Iterator& other) const { return m_Index < other.m_Index; }
+            inline bool operator>(const Iterator& other) const { return m_Index > other.m_Index; }
+            inline bool operator<=(const Iterator& other) const { return m_Index <= other.m_Index; }
+            inline bool operator>=(const Iterator& other) const { return m_Index >= other.m_Index; }
 
-            Iterator& operator++()
+            inline Iterator& operator++()
             {
                 m_Index++;
                 if (m_Index >= m_CI->end)
@@ -207,14 +207,14 @@ namespace EVA::ECS
                 return *this;
             }
 
-            const Iterator operator++(int)
+            inline const Iterator operator++(int)
             {
                 Iterator temp(*this);
                 operator++();
                 return temp;
             }
 
-            Iterator& operator--()
+            inline Iterator& operator--()
             {
                 m_Index--;
                 if (m_Index < m_CI->begin)
@@ -224,32 +224,33 @@ namespace EVA::ECS
                 return *this;
             }
 
-            Iterator operator--(int)
+            inline Iterator operator--(int)
             {
                 Iterator temp(*this);
                 operator--();
                 return temp;
             }
 
-            Iterator& operator+=(difference_type n)
+            inline Iterator& operator+=(difference_type n)
             {
                 m_Index += n;
                 UpdateCI();
                 return *this;
             }
-            Iterator& operator-=(difference_type n)
+            
+            inline Iterator& operator-=(difference_type n)
             {
                 m_Index -= n;
                 UpdateCI();
                 return *this;
             }
 
-            Iterator operator+(difference_type n) const { return Iterator(m_Index + n, m_Chunks); }
-            Iterator operator-(difference_type n) const { return Iterator(m_Index - n, m_Chunks); }
+            inline Iterator operator+(difference_type n) const { return Iterator(m_Index + n, m_Chunks); }
+            inline Iterator operator-(difference_type n) const { return Iterator(m_Index - n, m_Chunks); }
 
-            difference_type operator-(const Iterator& other) const { return m_Index - other.m_Index; }
+            inline difference_type operator-(const Iterator& other) const { return m_Index - other.m_Index; }
 
-            EntityIterator::value_type operator*()
+            inline EntityIterator::value_type operator*() const
             {
                 const Index index_in_chunk = m_Index - m_CI->begin;
                 return value_type(m_CI->c->GetComponent<T>(std::get<index_transform_t<T>>(m_CI->comp_indices).index, index_in_chunk)...);

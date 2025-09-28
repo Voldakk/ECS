@@ -82,9 +82,9 @@ namespace EVA::ECS
         Index AddEntityAddComponent(ComponentType newType, const ArchetypeChunk& chunk, Index indexInChunk, const Byte* data);
         Index AddEntityRemoveComponent(ComponentType removeType, const ArchetypeChunk& chunk, Index indexInChunk);
 
-        Index Count() const { return m_Count; }
-        bool Empty() const { return m_Count == 0; }
-        bool Full() const { return m_Count == m_ArchetypeInfo.entitiesPerChunk; }
+        inline Index Count() const { return m_Count; }
+        inline bool Empty() const { return m_Count == 0; }
+        inline bool Full() const { return m_Count == m_ArchetypeInfo.entitiesPerChunk; }
 
       private:
         ArchetypeInfo m_ArchetypeInfo;

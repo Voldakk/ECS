@@ -21,11 +21,11 @@ namespace EVA::ECS
         Entity DestroyEntity(const Index chunk, const Index indexInChunk);
         Entity& GetEntity(const Index chunk, const Index indexInChunk);
 
-        Index EntityCount() const { return m_EntityCount; }
-        Index ChunkCount() const { return m_Chunks.size(); }
-        Index ActiveChunkIndex() const { return m_ActiveChunkIndex; }
-        const ArchetypeInfo& GetInfo() const { return m_ArchetypeInfo; }
-        const ComponentList& GetComponents() const { return m_Components; }
+        inline Index EntityCount() const { return m_EntityCount; }
+        inline Index ChunkCount() const { return m_Chunks.size(); }
+        inline Index ActiveChunkIndex() const { return m_ActiveChunkIndex; }
+        inline const ArchetypeInfo& GetInfo() const { return m_ArchetypeInfo; }
+        inline const ComponentList& GetComponents() const { return m_Components; }
 
         std::pair<Index, Index>
         AddEntityAddComponent(Archetype& otherArchetype, const Index otherChunk, const Index otherIndexInChunk, const ComponentType newType, const Byte* data);

@@ -115,7 +115,8 @@ namespace EVA::ECS
             m_Types.insert(type);
             return *this;
         }
-        template <typename T> ComponentList& Add() { return Add(T::GetType()); }
+        
+        template <typename T> inline ComponentList& Add() { return Add(T::GetType()); }
 
         ComponentList& Remove(ComponentType type)
         {
@@ -123,10 +124,11 @@ namespace EVA::ECS
             m_Types.erase(type);
             return *this;
         }
-        template <typename T> ComponentList& Remove() { return Remove(T::GetType()); }
+        
+        template <typename T> inline ComponentList& Remove() { return Remove(T::GetType()); }
 
-        bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
-        bool operator!=(const ComponentList& other) const { return !(*this == other); }
+        inline bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
+        inline bool operator!=(const ComponentList& other) const { return !(*this == other); }
 
         bool Contains(const ComponentList& other) const
         {
@@ -152,14 +154,14 @@ namespace EVA::ECS
             return false;
         }
 
-        size_t Count() const { return m_Types.size(); }
+        inline size_t Count() const { return m_Types.size(); }
 
-        const std::set<ComponentType>& GetTypes() const { return m_Types; }
+        inline const std::set<ComponentType>& GetTypes() const { return m_Types; }
 
-        std::set<ComponentType>::iterator begin() { return m_Types.begin(); }
-        std::set<ComponentType>::iterator end() { return m_Types.end(); }
-        std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
-        std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }
+        inline std::set<ComponentType>::iterator begin() { return m_Types.begin(); }
+        inline std::set<ComponentType>::iterator end() { return m_Types.end(); }
+        inline std::set<ComponentType>::const_iterator begin() const { return m_Types.begin(); }
+        inline std::set<ComponentType>::const_iterator end() const { return m_Types.end(); }
     };
 
     // is_std_optional_v
