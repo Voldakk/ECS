@@ -2,6 +2,8 @@
 
 #include "CommandQueue.hpp"
 
+#include "Engine.hpp"
+
 namespace EVA::ECS
 {
     CommandQueue::CommandQueue() : m_Data(DefaultCommandQueueSize) {}

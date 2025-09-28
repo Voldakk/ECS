@@ -1,8 +1,11 @@
 #pragma once
 
+#include <execution>
+#include <thread>
 #include <vector>
 
 #include "Archetype.hpp"
+#include "CommandQueue.hpp"
 #include "Component.hpp"
 #include "Core.hpp"
 
@@ -21,7 +24,6 @@ namespace EVA::ECS
     template <typename T> using index_transform_t = typename index_transform<T>::type;
 
     using ArchetypeIterator = std::vector<Archetype*>::iterator;
-
 
     template <typename... T> class EntityIterator
     {
@@ -102,30 +104,76 @@ namespace EVA::ECS
 
 
         class Iterator;
-        Iterator begin() { return Iterator(*this, 0, m_Chunks); }
-        Iterator end() { return Iterator(*this, Count(), m_Chunks); }
+        Iterator begin() { return Iterator(0, m_Chunks); }
+        Iterator end() { return Iterator(Count(), m_Chunks); }
+
+        auto Split()
+        {
+            std::vector<std::pair<Iterator, Iterator>> iterators;
+            size_t n          = Count();
+            size_t chunk_size = (n + std::thread::hardware_concurrency() - 1) / std::thread::hardware_concurrency();
+
+            for (size_t i = 0; i < n; i += chunk_size)
+            {
+                auto b = Iterator(i, m_Chunks);
+                auto e = Iterator(i + std::min(chunk_size, n - i), m_Chunks);
+                iterators.emplace_back(b, e);
+            }
+
+            return iterators;
+        }
+
+        template <typename Func> void Process(Func&& func)
+        {
+            auto iterators = Split();
+            std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
+            [&](auto& range)
+            {
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    func(*it);
+                }
+            });
+        }
+
+        template <typename Func> void ProcessWithCQ(Engine& engine, Func&& func)
+        {
+            auto iterators = Split();
+            std::vector<CommandQueue> queues(iterators.size());
+
+            std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
+            [&](auto& range)
+            {
+                size_t idx = &range - &iterators[0];
+
+                CommandQueue cq;
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    func(cq, *it);
+                }
+                queues[idx] = std::move(cq);
+            });
+            for (auto& cq : queues)
+            {
+                cq.Execute(engine);
+            }
+        }
 
         class Iterator
         {
-            const EntityIterator& m_EI;
             Index m_Index;
             const ChunkInfo* m_CI;
-            std::vector<ChunkInfo> m_Chunks;
+            const std::vector<ChunkInfo>& m_Chunks;
 
           public:
-            using value_type        = std::tuple<optional_ref_transform_t<T>...>;
-            using pointer           = value_type*;
-            using reference         = value_type&;
-            using difference_type   = Index;
-            using iterator_category = std::forward_iterator_tag;
+            const Index& Pos() { return m_Index; }
 
-            Iterator(const EntityIterator& ei, Index index, std::vector<ChunkInfo> chunks)
-            : m_EI(ei), m_Index(index), m_Chunks(std::move(chunks))
+            void UpdateCI()
             {
                 m_CI = nullptr;
                 for (const ChunkInfo& info : m_Chunks)
                 {
-                    if (info.end > index)
+                    if (info.end > m_Index)
                     {
                         m_CI = &info;
                         break;
@@ -133,8 +181,20 @@ namespace EVA::ECS
                 }
             }
 
-            bool operator==(const Iterator& other) { return m_Index == other.m_Index; }
-            bool operator!=(const Iterator& other) { return m_Index != other.m_Index; }
+            using value_type        = std::tuple<optional_ref_transform_t<T>...>;
+            using pointer           = value_type*;
+            using reference         = value_type&;
+            using difference_type   = Index;
+            using iterator_category = std::bidirectional_iterator_tag;
+
+            Iterator(Index index, const std::vector<ChunkInfo>& chunks) : m_Index(index), m_Chunks(chunks) { UpdateCI(); }
+
+            bool operator==(const Iterator& other) const { return m_Index == other.m_Index; }
+            bool operator!=(const Iterator& other) const { return m_Index != other.m_Index; }
+            bool operator<(const Iterator& other) const { return m_Index < other.m_Index; }
+            bool operator>(const Iterator& other) const { return m_Index > other.m_Index; }
+            bool operator<=(const Iterator& other) const { return m_Index <= other.m_Index; }
+            bool operator>=(const Iterator& other) const { return m_Index >= other.m_Index; }
 
             Iterator& operator++()
             {
@@ -153,6 +213,41 @@ namespace EVA::ECS
                 operator++();
                 return temp;
             }
+
+            Iterator& operator--()
+            {
+                m_Index--;
+                if (m_Index < m_CI->begin)
+                {
+                    m_CI--;
+                }
+                return *this;
+            }
+
+            Iterator operator--(int)
+            {
+                Iterator temp(*this);
+                operator--();
+                return temp;
+            }
+
+            Iterator& operator+=(difference_type n)
+            {
+                m_Index += n;
+                UpdateCI();
+                return *this;
+            }
+            Iterator& operator-=(difference_type n)
+            {
+                m_Index -= n;
+                UpdateCI();
+                return *this;
+            }
+
+            Iterator operator+(difference_type n) const { return Iterator(m_Index + n, m_Chunks); }
+            Iterator operator-(difference_type n) const { return Iterator(m_Index - n, m_Chunks); }
+
+            difference_type operator-(const Iterator& other) const { return m_Index - other.m_Index; }
 
             EntityIterator::value_type operator*()
             {

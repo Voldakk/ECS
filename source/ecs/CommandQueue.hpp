@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Core.hpp"
-#include "Engine.hpp"
+#include "Component.hpp"
 
 namespace EVA::ECS
 {
+    class Engine;
+
     class CommandQueue
     {
         enum class CommandType
