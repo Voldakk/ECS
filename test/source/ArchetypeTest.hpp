@@ -132,33 +132,6 @@ namespace EVA::ECS
         EXPECT_EQ(s, a.GetComponent<StructComponentA>(0));
     }
 
-    TEST(Archetype, Iterator)
-    {
-        ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
-        size_t chunkSize = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(StructComponentA));
-        Archetype a(cl, chunkSize);
-
-        for (size_t i = 0; i < 20; i++)
-            a.CreateEntity(Entity(i));
-
-        EXPECT_EQ(std::distance(a.begin<Entity>(), a.end<Entity>()), 20);
-
-        int v = 0;
-        for (auto it = a.begin<Position>(); it != a.end<Position>(); ++it)
-            it->x = 2 * v++;
-
-        v = 0;
-        for (auto it = a.begin<StructComponentA>(); it != a.end<StructComponentA>(); ++it)
-            it->y = 3 * v++;
-
-        Index i;
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(a.GetComponent<Position>(i).x, 2 * i);
-
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(a.GetComponent<StructComponentA>(i).y, 3 * i);
-    }
-
     TEST(Archetype, AddComponent)
     {
         ComponentList cl1({ Position::GetType(), StructComponentA::GetType() });
@@ -455,6 +428,47 @@ namespace EVA::ECS
                 EXPECT_EQ(a2.GetComponent<Position>(i).x, 100);
                 EXPECT_EQ(a2.GetComponent<Velocity>(i).y, a2.GetComponent<Entity>(i).id);
             }
+        }
+    }
+
+    TEST(Archetype, EntityIteratorRandomAccess)
+    {
+        ComponentList cl1 = ComponentList::Create<Position, StructComponentA>();
+        size_t chunkSize1 = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(StructComponentA));
+        Archetype a1(cl1, chunkSize1);
+
+        ComponentList cl2 = ComponentList::Create<Position, Velocity>();
+        size_t chunkSize2 = 4 * (sizeof(Entity) + sizeof(Position) + sizeof(Velocity));
+        Archetype a2(cl2, chunkSize2);
+
+        for (size_t i = 0; i < 20; i++)
+        {
+            a1.CreateEntity(Entity(i));
+            a2.CreateEntity(Entity(20 + i));
+        }
+
+        EXPECT_EQ(a1.EntityCount(), 20);
+        EXPECT_EQ(a2.EntityCount(), 20);
+
+        EntityIterator<Entity, Position> it({ &a1, &a2 });
+
+        EXPECT_FALSE(it.Empty());
+        EXPECT_EQ(it.Count(), 40);
+
+        for (size_t i = 0; i < it.Count(); i++)
+        {
+            auto [entity, position] = it[i];
+
+            position.x = (int)entity.id * 10;
+        }
+
+        for (Index i = 0; i < a1.EntityCount(); i++)
+        {
+            EXPECT_EQ(a1.GetComponent<Position>(i).x, a1.GetComponent<Entity>(i).id * 10);
+        }
+        for (Index i = 0; i < 20; i++)
+        {
+            EXPECT_EQ(a2.GetComponent<Position>(i).x, a2.GetComponent<Entity>(i).id * 10);
         }
     }
 } // namespace EVA::ECS

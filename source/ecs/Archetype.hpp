@@ -51,97 +51,16 @@ namespace EVA::ECS
         Byte* GetComponent(const Index archetypeComponentIndex, const Index index);
         template <typename T> inline T& GetComponent(const Index index) { return *FromBytes<T>(GetComponent(T::GetType(), index)); }
 
-        template <typename T> Iterator<T> begin()
-        {
-            const auto i = m_ArchetypeInfo.GetComponentIndex(optional_inner_type_t<T>::GetType());
-            return Iterator<T>(m_Chunks.begin(), m_Chunks.begin() + m_ActiveChunkIndex + 1, i);
-        }
-        template <typename T> Iterator<T> end()
-        {
-            const auto i = m_ArchetypeInfo.GetComponentIndex(optional_inner_type_t<T>::GetType());
-            return Iterator<T>(m_Chunks.begin() + m_ActiveChunkIndex + 1, i);
-        }
+        ChunkVector m_Chunks;
 
       private:
         ComponentList m_Components;
         ArchetypeInfo m_ArchetypeInfo;
         Index m_EntityCount;
 
-        ChunkVector m_Chunks;
         ChunkVector::difference_type m_ActiveChunkIndex;
 
         void AddChunk();
         void ReserveChunk();
-
-      public:
-        template <typename T> class Iterator
-        {
-          public:
-            using raw_type          = std::conditional_t<is_std_optional_v<T>, optional_inner_type_t<T>, T>;
-            using value_type        = std::conditional_t<is_std_optional_v<T>, OptionalRef<raw_type>, raw_type>;
-            using pointer           = value_type*;
-            using reference         = value_type&;
-            using difference_type   = Index;
-            using iterator_category = std::forward_iterator_tag;
-
-            Iterator()
-            : m_Index(std::nullopt), m_ChunksIt(ChunkVector::iterator()), m_ChunksEnd(ChunkVector::iterator()),
-              m_CompIt(ArchetypeChunk::Iterator<T>()), m_CompsEnd(ArchetypeChunk::Iterator<T>())
-            {
-            }
-
-            Iterator(ChunkVector::iterator chunksEnd, std::optional<Index> index)
-            : m_Index(index), m_ChunksIt(chunksEnd), m_ChunksEnd(chunksEnd)
-            {
-            }
-
-            Iterator(ChunkVector::iterator chunkIt, ChunkVector::iterator chunksEnd, std::optional<Index> index)
-            : m_Index(index), m_ChunksIt(chunkIt), m_ChunksEnd(chunksEnd), m_CompIt((*m_ChunksIt)->begin<T>(m_Index)),
-              m_CompsEnd((*m_ChunksIt)->end<T>(m_Index))
-            {
-            }
-
-            bool operator==(const Iterator& other) { return m_ChunksIt == other.m_ChunksIt && m_CompIt == other.m_CompIt; }
-
-            bool operator!=(const Iterator& other) { return !(*this == other); }
-
-            Iterator& operator++()
-            {
-                ++m_CompIt;
-                if (m_CompIt == m_CompsEnd)
-                {
-                    ++m_ChunksIt;
-                    if (m_ChunksIt != m_ChunksEnd)
-                    {
-                        m_CompIt   = (*m_ChunksIt)->begin<T>(m_Index);
-                        m_CompsEnd = (*m_ChunksIt)->end<T>(m_Index);
-                    }
-                    else
-                    {
-                        m_CompIt   = ArchetypeChunk::Iterator<T>();
-                        m_CompsEnd = ArchetypeChunk::Iterator<T>();
-                    }
-                }
-                return *this;
-            }
-
-            const Iterator operator++(int)
-            {
-                Iterator temp(*this);
-                operator++();
-                return temp;
-            }
-
-            pointer operator->() { return &(*m_CompIt); }
-
-            reference operator*() { return *m_CompIt; }
-
-          private:
-            std::optional<Index> m_Index;
-            ChunkVector::iterator m_ChunksIt;
-            ChunkVector::iterator m_ChunksEnd;
-            ArchetypeChunk::Iterator<T> m_CompIt;
-            ArchetypeChunk::Iterator<T> m_CompsEnd;
-        };
     };
 } // namespace EVA::ECS

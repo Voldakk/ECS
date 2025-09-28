@@ -131,6 +131,29 @@ namespace EVA::ECS
         EXPECT_EQ(memcmp(pos14_0, pos14_2, sizeof(Position)), 0);
     }
 
+    TEST(ArchetypeChunk, GetComponentOptional)
+    {
+        ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
+        ArchetypeInfo ai(cl);
+        ArchetypeChunk ac(ai);
+
+        for (size_t i = 0; i < 20; i++)
+            ac.CreateEntity(Entity(i));
+
+        auto pos14_0 = ac.GetComponent(Position::GetType(), 14);
+        auto pos14_1 = ac.GetComponent(1, 14);
+        auto pos14_2 = ToBytes(ac.GetComponent<std::optional<Position>>(14).value());
+
+        EXPECT_EQ(pos14_0, pos14_1);
+        EXPECT_EQ(pos14_0, pos14_2);
+
+        ac.GetComponent<Position>(14).x = 10;
+
+        EXPECT_EQ(FromBytes<Position>(pos14_0)->x, 10);
+        EXPECT_EQ(memcmp(pos14_0, pos14_1, sizeof(Position)), 0);
+        EXPECT_EQ(memcmp(pos14_0, pos14_2, sizeof(Position)), 0);
+    }
+
     TEST(ArchetypeChunk, CreateWithData)
     {
         ArchetypeInfo ai(ComponentList::Create<Position, Velocity, IntComp>());
@@ -149,83 +172,6 @@ namespace EVA::ECS
         EXPECT_EQ(ac.GetComponent<Position>(0), p);
         EXPECT_EQ(ac.GetComponent<Velocity>(0), v);
         EXPECT_EQ(ac.GetComponent<IntComp>(0), i);
-    }
-
-    TEST(ArchetypeChunk, Iterator)
-    {
-        ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
-        ArchetypeInfo ai(cl);
-        ArchetypeChunk ac(ai);
-
-        for (size_t i = 0; i < 20; i++)
-            ac.CreateEntity(Entity(i));
-
-        EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
-
-        int v = 0;
-        for (auto it = ac.begin<Position>(); it != ac.end<Position>(); ++it)
-            it->x = 2 * v++;
-
-        v = 0;
-        for (auto it = ac.begin<StructComponentA>(); it != ac.end<StructComponentA>(); ++it)
-            it->y = 3 * v++;
-
-        Index i;
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(ac.GetComponent<Position>(i).x, 2 * i);
-
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(ac.GetComponent<StructComponentA>(i).y, 3 * i);
-    }
-
-    TEST(ArchetypeChunk, IteratorOptional)
-    {
-        ComponentList cl({ Position::GetType(), StructComponentA::GetType() });
-        ArchetypeInfo ai(cl);
-        ArchetypeChunk ac(ai);
-
-        for (size_t i = 0; i < 20; i++)
-            ac.CreateEntity(Entity(i));
-
-        EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
-
-        int v = 0;
-        for (auto it = ac.begin<std::optional<Position>>(); it != ac.end<std::optional<Position>>(); ++it)
-        {
-            it->value().x = 2 * v++;
-        }
-
-        v = 0;
-        for (auto it = ac.begin<std::optional<StructComponentA>>(); it != ac.end<std::optional<StructComponentA>>(); ++it)
-        {
-            it->value().y = 3 * v++;
-        }
-
-        Index i;
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(ac.GetComponent<Position>(i).x, 2 * i);
-
-        for (i = 0; i < 20; i++)
-            EXPECT_EQ(ac.GetComponent<StructComponentA>(i).y, 3 * i);
-    }
-
-    TEST(ArchetypeChunk, IteratorMissingOptional)
-    {
-        ComponentList cl({ Position::GetType() });
-        ArchetypeInfo ai(cl);
-        ArchetypeChunk ac(ai);
-
-        for (size_t i = 0; i < 20; i++)
-            ac.CreateEntity(Entity(i));
-
-        EXPECT_EQ(std::distance(ac.begin<Entity>(), ac.end<Entity>()), 20);
-        EXPECT_EQ(std::distance(ac.begin<Position>(), ac.end<Position>()), 20);
-        EXPECT_EQ(std::distance(ac.begin<std::optional<StructComponentA>>(), ac.end<std::optional<StructComponentA>>()), 20);
-
-        for (auto it = ac.begin<std::optional<StructComponentA>>(); it != ac.end<std::optional<StructComponentA>>(); ++it)
-        {
-            EXPECT_FALSE(it->has_value());
-        }
     }
 
     TEST(ArchetypeChunk, AddComponent)

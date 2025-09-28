@@ -8,17 +8,62 @@
 
 namespace EVA::ECS
 {
+    template <typename T> struct ArchtypeCompIndex
+    {
+        std::optional<Index> index;
+    };
+
+    template <typename T> struct index_transform
+    {
+        using type = ArchtypeCompIndex<T>;
+    };
+
+    template <typename T> using index_transform_t = typename index_transform<T>::type;
+
     using ArchetypeIterator = std::vector<Archetype*>::iterator;
+
 
     template <typename... T> class EntityIterator
     {
+        using CompIndices = std::tuple<index_transform_t<T>...>;
+        using value_type  = std::tuple<optional_ref_transform_t<T>...>;
+
+        struct ChunkInfo
+        {
+            Index begin;
+            Index end;
+            Archetype* a;
+            ArchetypeChunk* c;
+            CompIndices comp_indices;
+        };
+
+        std::vector<ChunkInfo> m_Chunks;
         std::vector<Archetype*> m_Archetypes;
 
       public:
-        class Iterator;
+        explicit EntityIterator(const std::vector<Archetype*>& archetypes) : m_Archetypes(archetypes)
+        {
+            Index count = 0;
+            CompIndices comp_indices;
 
-        explicit EntityIterator(const std::vector<Archetype*>& archetypes) : m_Archetypes(archetypes) {}
+            for (auto a : m_Archetypes)
+            {
+                ((std::get<index_transform_t<T>>(comp_indices).index = a->GetInfo().GetComponentIndex(optional_inner_type_t<T>::GetType())), ...);
 
+                for (auto c : a->m_Chunks)
+                {
+                    if (c->Empty())
+                        break;
+
+                    Index begin = count;
+                    count += c->Count();
+
+                    m_Chunks.emplace_back(begin, count, a, c.get(), comp_indices);
+                }
+            }
+        }
+
+        Index ArchetypeCount() { return m_Archetypes.size(); }
         Index Count() const
         {
             Index count = 0;
@@ -39,23 +84,34 @@ namespace EVA::ECS
             return true;
         }
 
-        Index ArchetypeCount() { return m_Archetypes.size(); }
-
-        Iterator begin()
+        value_type operator[](Index i) const
         {
-            return Empty() ? end() :
-                             Iterator(m_Archetypes.begin(), m_Archetypes.end()
-#ifdef ECS_DEBUG
-                                                            ,
-                             Count()
-#endif // ECS_DEBUG
-                             );
+            const ChunkInfo* ci = nullptr;
+            for (const ChunkInfo& info : m_Chunks)
+            {
+                if (info.end > i)
+                {
+                    ci = &info;
+                    break;
+                }
+            }
+
+            const Index index_in_chunk = i - ci->begin;
+            return value_type(ci->c->GetComponent<T>(std::get<index_transform_t<T>>(ci->comp_indices).index, index_in_chunk)...);
         }
 
-        Iterator end() { return Iterator(m_Archetypes.end()); }
+
+        class Iterator;
+        Iterator begin() { return Iterator(*this, 0, m_Chunks); }
+        Iterator end() { return Iterator(*this, Count(), m_Chunks); }
 
         class Iterator
         {
+            const EntityIterator& m_EI;
+            Index m_Index;
+            const ChunkInfo* m_CI;
+            std::vector<ChunkInfo> m_Chunks;
+
           public:
             using value_type        = std::tuple<optional_ref_transform_t<T>...>;
             using pointer           = value_type*;
@@ -63,55 +119,30 @@ namespace EVA::ECS
             using difference_type   = Index;
             using iterator_category = std::forward_iterator_tag;
 
-            explicit Iterator(ArchetypeIterator end)
-            : m_ArchetypeIterator(end), m_ArchetypeEnd(end), m_Iterators(std::tuple<Archetype::Iterator<T>...>((Archetype::Iterator<T>())...))
+            Iterator(const EntityIterator& ei, Index index, std::vector<ChunkInfo> chunks)
+            : m_EI(ei), m_Index(index), m_Chunks(std::move(chunks))
             {
+                m_CI = nullptr;
+                for (const ChunkInfo& info : m_Chunks)
+                {
+                    if (info.end > index)
+                    {
+                        m_CI = &info;
+                        break;
+                    }
+                }
             }
 
-            Iterator(ArchetypeIterator begin,
-            ArchetypeIterator end
-#ifdef ECS_DEBUG
-            ,
-            Index maxCount
-#endif // ECS_DEBUG
-            )
-            : m_ArchetypeIterator(begin), m_ArchetypeEnd(end), m_Iterators(std::tuple<Archetype::Iterator<T>...>(((*begin)->begin<T>())...)),
-              m_IteratorsEnd(std::tuple<Archetype::Iterator<T>...>(((*begin)->end<T>())...))
-#ifdef ECS_DEBUG
-              ,
-              m_Count(0), m_MaxCount(maxCount)
-#endif // ECS_DEBUG
-            {
-            }
-
-            bool operator==(const Iterator& other)
-            {
-                return m_ArchetypeIterator == other.m_ArchetypeIterator && std::get<0>(m_Iterators) == std::get<0>(other.m_Iterators);
-            }
-            bool operator!=(const Iterator& other) { return !(*this == other); }
+            bool operator==(const Iterator& other) { return m_Index == other.m_Index; }
+            bool operator!=(const Iterator& other) { return m_Index != other.m_Index; }
 
             Iterator& operator++()
             {
-                (++(std::get<Archetype::Iterator<T>>(m_Iterators)), ...);
-
-                if (std::get<0>(m_Iterators) == std::get<0>(m_IteratorsEnd))
+                m_Index++;
+                if (m_Index >= m_CI->end)
                 {
-                    ++m_ArchetypeIterator;
-                    if (m_ArchetypeIterator == m_ArchetypeEnd)
-                    {
-                        m_Iterators = std::tuple<Archetype::Iterator<T>...>((Archetype::Iterator<T>())...);
-                    }
-                    else
-                    {
-                        m_Iterators    = std::tuple<Archetype::Iterator<T>...>(((*m_ArchetypeIterator)->begin<T>())...);
-                        m_IteratorsEnd = std::tuple<Archetype::Iterator<T>...>(((*m_ArchetypeIterator)->end<T>())...);
-                    }
+                    m_CI++;
                 }
-
-#ifdef ECS_DEBUG
-                m_Count++;
-                ECS_ASSERT(m_Count <= m_MaxCount)
-#endif // ECS_DEBUG
 
                 return *this;
             }
@@ -123,18 +154,11 @@ namespace EVA::ECS
                 return temp;
             }
 
-            value_type operator*() { return value_type(((*(std::get<Archetype::Iterator<T>>(m_Iterators))))...); }
-
-          private:
-            ArchetypeIterator m_ArchetypeIterator;
-            ArchetypeIterator m_ArchetypeEnd;
-            std::tuple<Archetype::Iterator<T>...> m_Iterators;
-            std::tuple<Archetype::Iterator<T>...> m_IteratorsEnd;
-
-#ifdef ECS_DEBUG
-            Index m_Count;
-            Index m_MaxCount;
-#endif // ECS_DEBUG
+            EntityIterator::value_type operator*()
+            {
+                const Index index_in_chunk = m_Index - m_CI->begin;
+                return value_type(m_CI->c->GetComponent<T>(std::get<index_transform_t<T>>(m_CI->comp_indices).index, index_in_chunk)...);
+            }
         };
     };
 } // namespace EVA::ECS
