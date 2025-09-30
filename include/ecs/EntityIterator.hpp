@@ -9,6 +9,14 @@
 #include "Component.hpp"
 #include "Core.hpp"
 
+#ifndef EVA_ECS_PROFILE_FUNCTION
+#define EVA_ECS_PROFILE_FUNCTION()
+#endif
+
+#ifndef EVA_ECS_PROFILE_SCOPE
+#define EVA_ECS_PROFILE_SCOPE(NAME)
+#endif
+
 namespace EVA::ECS
 {
     template <typename T> struct ArchtypeCompIndex
@@ -129,6 +137,7 @@ namespace EVA::ECS
             std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
             [&](auto& range)
             {
+                EVA_ECS_PROFILE_SCOPE("Parallel");
                 for (auto it = range.first; it != range.second; ++it)
                 {
                     func(*it);
@@ -144,6 +153,7 @@ namespace EVA::ECS
             std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
             [&](auto& range)
             {
+                EVA_ECS_PROFILE_SCOPE("Parallel");
                 size_t idx = &range - &iterators[0];
 
                 CommandQueue cq;
@@ -153,9 +163,13 @@ namespace EVA::ECS
                 }
                 queues[idx] = std::move(cq);
             });
-            for (auto& cq : queues)
+
             {
-                cq.Execute(engine);
+                EVA_ECS_PROFILE_SCOPE("Execure CQ");
+                for (auto& cq : queues)
+                {
+                    cq.Execute(engine);
+                }
             }
         }
 
@@ -237,7 +251,7 @@ namespace EVA::ECS
                 UpdateCI();
                 return *this;
             }
-            
+
             inline Iterator& operator-=(difference_type n)
             {
                 m_Index -= n;

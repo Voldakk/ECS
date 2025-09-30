@@ -23,6 +23,7 @@ set_target_properties(
 # Include paths
 target_include_directories(EVA_ECS 
 	PUBLIC "include"
+  PRIVATE "include/ecs"
 )
 
 option(${PROJECT_NAME}_ENABLE_TESTS "Enable tests" OFF)

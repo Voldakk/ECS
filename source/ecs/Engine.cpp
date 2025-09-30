@@ -37,8 +37,10 @@ namespace EVA::ECS
 
     void Engine::DeleteEntity(const Entity& entity)
     {
-        const auto& loc = m_EntityLocations[entity.index];
+        auto& loc = m_EntityLocations[entity.index];
         ECS_ASSERT(entity.id == loc.entityId);
+        loc.entityId = 0;
+
         Archetype& archetype = GetArchetype(loc.archetype);
         auto moved           = archetype.DestroyEntity(loc.chunk, loc.position);
         m_FreeEntetyLocationIndices.push(entity.index);
