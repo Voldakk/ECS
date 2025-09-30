@@ -107,11 +107,11 @@ namespace EVA::ECS
         Iterator begin() { return Iterator(0, m_Chunks); }
         Iterator end() { return Iterator(Count(), m_Chunks); }
 
-        auto Split()
+        auto Split(size_t num_chunks)
         {
             std::vector<std::pair<Iterator, Iterator>> iterators;
             size_t n          = Count();
-            size_t chunk_size = (n + std::thread::hardware_concurrency() - 1) / std::thread::hardware_concurrency();
+            size_t chunk_size = (n + num_chunks - 1) / num_chunks;
 
             for (size_t i = 0; i < n; i += chunk_size)
             {
@@ -123,9 +123,9 @@ namespace EVA::ECS
             return iterators;
         }
 
-        template <typename Func> void Process(Func&& func)
+        template <typename Func> void Process(size_t num_chunks, Func&& func)
         {
-            auto iterators = Split();
+            auto iterators = Split(num_chunks);
             std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
             [&](auto& range)
             {
@@ -136,9 +136,9 @@ namespace EVA::ECS
             });
         }
 
-        template <typename Func> void ProcessWithCQ(Engine& engine, Func&& func)
+        template <typename Func> void ProcessWithCQ(size_t num_chunks, Engine& engine, Func&& func)
         {
-            auto iterators = Split();
+            auto iterators = Split(num_chunks);
             std::vector<CommandQueue> queues(iterators.size());
 
             std::for_each(std::execution::par_unseq, iterators.begin(), iterators.end(),
