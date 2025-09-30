@@ -159,7 +159,7 @@ namespace EVA::ECS
                 CommandQueue cq;
                 for (auto it = range.first; it != range.second; ++it)
                 {
-                    func(cq, *it);
+                    func(idx, cq, *it);
                 }
                 queues[idx] = std::move(cq);
             });

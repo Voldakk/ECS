@@ -115,7 +115,7 @@ namespace EVA::ECS
             m_Types.insert(type);
             return *this;
         }
-        
+
         template <typename T> inline ComponentList& Add() { return Add(T::GetType()); }
 
         ComponentList& Remove(ComponentType type)
@@ -124,7 +124,7 @@ namespace EVA::ECS
             m_Types.erase(type);
             return *this;
         }
-        
+
         template <typename T> inline ComponentList& Remove() { return Remove(T::GetType()); }
 
         inline bool operator==(const ComponentList& other) const { return m_Types == other.m_Types; }
@@ -343,7 +343,8 @@ namespace EVA::ECS
         Index index = 0;
 
         Entity() = default;
-        explicit Entity(EntityId _id) : id(_id) {}
+        explicit Entity(EntityId id) : id(id) {}
+        Entity(EntityId id, Index index) : id(id), index(index) {}
 
         bool operator==(const Entity& other) const { return id == other.id; }
         bool operator!=(const Entity& other) const { return !(*this == other); }
@@ -366,10 +367,7 @@ namespace std
     template <> struct hash<EVA::ECS::Entity>
     {
       public:
-        std::size_t operator()(const EVA::ECS::Entity& e) const
-        {
-            return e.id;
-        }
+        std::size_t operator()(const EVA::ECS::Entity& e) const { return e.id; }
     };
 
     template <> struct hash<EVA::ECS::ComponentList>
