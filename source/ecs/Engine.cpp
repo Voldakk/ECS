@@ -32,6 +32,11 @@ namespace EVA::ECS
             m_EntityLocations[index] = EntityLocation(archetypeIndex, chunk, position, entity.id);
         }
 
+        for (auto system : m_Systems)
+        {
+            system->OnEntityCreated(entity);
+        }
+
         return entity;
     }
 
@@ -40,6 +45,11 @@ namespace EVA::ECS
         auto& loc = m_EntityLocations[entity.index];
         ECS_ASSERT(entity.id == loc.entityId);
         loc.entityId = 0;
+
+        for (auto system : m_Systems)
+        {
+            system->OnEntityDestroyed(entity);
+        }
 
         Archetype& archetype = GetArchetype(loc.archetype);
         auto moved           = archetype.DestroyEntity(loc.chunk, loc.position);

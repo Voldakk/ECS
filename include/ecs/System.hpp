@@ -16,17 +16,17 @@ namespace EVA::ECS
         virtual ~System() = default;
         virtual inline void Init() {}
         virtual inline void Update() = 0;
+        virtual inline void OnEntityCreated(Entity e) {}
+        virtual inline void OnEntityDestroyed(Entity e) {}
 
       protected:
         Engine& GetEngine();
 
         template <typename Tuple, typename F, typename... Extra> decltype(auto) unpack_tuple_types(F&& f, Extra&&... extra)
         {
-            return []<typename... Ts>(std::tuple<Ts...>*, F && fn, Extra && ... xs)
-            {
-                return std::forward<F>(fn).template operator()<Ts...>(std::forward<Extra>(xs)...);
-            }
-            ((Tuple*)nullptr, std::forward<F>(f), std::forward<Extra>(extra)...);
+            return []<typename... Ts>(std::tuple<Ts...>*, F&& fn, Extra&&... xs)
+            { return std::forward<F>(fn).template operator()<Ts...>(std::forward<Extra>(xs)...); }(
+            (Tuple*)nullptr, std::forward<F>(f), std::forward<Extra>(extra)...);
         }
 
         struct Builder
@@ -46,7 +46,7 @@ namespace EVA::ECS
 
       private:
         std::vector<Archetype*> GetArchetypes(const ComponentFilter& filter);
-        
+
         Engine* m_Engine = nullptr;
     };
 } // namespace EVA::ECS
